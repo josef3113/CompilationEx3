@@ -7,7 +7,7 @@ static const char *kindString[] = { "variable", "function", "parameter" };
 
 void initializeSymbol(struct symbol *symbol, const char *id, enum type type, enum kind kind) {
 
-	//char symbolId = (char*)malloc(sizeof(id));
+	//char symbolId = (char*)malloc(sizeof(id)); 
 	//memcpy(symbolId, id, strlen(id));
 	symbol->id = id;
 	memcpy(&(symbol->type), &type, sizeof(type));
