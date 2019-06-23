@@ -8,10 +8,10 @@ void parse_PROGRAM();
 void parse_VAR_DEFINITIONS();
 void parse_VAR_DEFINITIONS_t(); // is A'
 void parse_VAR_DEFINITION();
-void parse_TYPE();
-void parse_VARIABLES_LIST();
-void parse_VARIABLES_LIST_t();
-void parse_VARIABLE();
+enum type  parse_TYPE();
+void parse_VARIABLES_LIST(enum type);
+void parse_VARIABLES_LIST_t(enum type);
+void parse_VARIABLE(enum type);
 void parse_VARIABLE_t(); // is B'
 void parse_FUNC_DEFINITIONS();
 void parse_FUNC_DEFINITIONS_t();

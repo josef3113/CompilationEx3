@@ -5,7 +5,7 @@
 #include "Token.h"
 // <id,type,kind>
 
-enum type { INT, FLOAT, DOUBLE, BOOL };
+enum type { INTEGER, REAL ,ERROR};
 enum kind { variable, function, parameter };
 
 struct symbol {

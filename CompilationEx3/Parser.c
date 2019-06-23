@@ -128,8 +128,8 @@ void parse_VAR_DEFINITION()
 		fprintf(outSyntactic, "Rule (VAR_DEFINITION -> TYPE VARIABLES_LIST) \n");
 
 		back_token();
-		parse_TYPE();
-		parse_VARIABLES_LIST();
+		enum type type = parse_TYPE();
+		parse_VARIABLES_LIST(type);
 	}break;
 
 	default:
@@ -146,7 +146,7 @@ void parse_VAR_DEFINITION()
 	}
 }
 
-void parse_TYPE()
+enum type parse_TYPE()
 {
 	Token* curr_token = next_token();
 	switch (curr_token->kind)
@@ -154,10 +154,16 @@ void parse_TYPE()
 	case TOKEN_KEY_REAL:
 	{
 		fprintf(outSyntactic, "Rule (TYPE -> real) \n");
+
+		//semantic
+		return REAL;
 	}break;
 	case TOKEN_KEY_INTEGER:
 	{
 		fprintf(outSyntactic, "Rule (TYPE -> integer) \n");
+
+		//semantic
+		return INTEGER;
 	}break;
 	default:
 	{
@@ -169,11 +175,14 @@ void parse_TYPE()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic 
+		return ERROR;
 	}
 	}
 }
 
-void parse_VARIABLES_LIST()
+void parse_VARIABLES_LIST(enum type type)
 {
 	Token* curr_token = next_token();
 	switch (curr_token->kind)
@@ -182,8 +191,8 @@ void parse_VARIABLES_LIST()
 	{
 		fprintf(outSyntactic, "Rule (VARIABLES_LIST -> VARIABLE VARIABLES_LIST_t) \n");
 		back_token();
-		parse_VARIABLE();
-		parse_VARIABLES_LIST_t();
+		parse_VARIABLE(type);
+		parse_VARIABLES_LIST_t(type);
 	}break;
 	default:
 	{
@@ -199,7 +208,7 @@ void parse_VARIABLES_LIST()
 	}
 }
 
-void parse_VARIABLES_LIST_t()
+void parse_VARIABLES_LIST_t(enum type type)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -207,8 +216,8 @@ void parse_VARIABLES_LIST_t()
 	case TOKEN_SEP_COMMA:
 	{
 		fprintf(outSyntactic, "Rule (VARIABLES_LIST_t -> ,VARIABLE VARIABLES_LIST_t) \n");
-		parse_VARIABLE();
-		parse_VARIABLES_LIST_t();
+		parse_VARIABLE(type);
+		parse_VARIABLES_LIST_t(type);
 	}break;
 
 	//follow
@@ -232,7 +241,7 @@ void parse_VARIABLES_LIST_t()
 	}
 }
 
-void parse_VARIABLE()
+void parse_VARIABLE(enum type type)
 {
 	Token*	curr_token = next_token();
 
@@ -244,9 +253,8 @@ void parse_VARIABLE()
 		parse_VARIABLE_t();
 		
 		// semantic 
-		struct symbol symbol;
-		initializeSymbol(&symbol, curr_token->lexeme, INT, variable);
-		symbolTable_insertSymbol(symbolTable, symbol);
+		insert(symbolTable, curr_token->lexeme, type, variable);
+		//printf("lexme:%s type:%d \n", curr_token->lexeme, type);
 
 	}break;
 	default:
@@ -555,6 +563,9 @@ void parse_STATEMENT()
 	{
 		fprintf(outSyntactic, "Rule (STATEMENT -> id STATEMENT_t2 ) \n");
 
+		// semantic
+		lookup(symbolTable, curr_token->lexeme);
+
 		parse_STATEMENT_t2();
 	}break;
 
@@ -702,7 +713,7 @@ void parse_PARAMETERS_LIST()
 		fprintf(outSyntactic, "Rule (PARAMETERS_LIST -> VARIABLES_LIST ) \n");
 
 		back_token();
-		parse_VARIABLES_LIST();
+		parse_VARIABLES_LIST(ERROR); // semantic need to change this !-!-!
 	}break;
 
 	case TOKEN_SEP_R_ROUND_BRACKET:

@@ -105,9 +105,7 @@ struct symbol* lookup(struct symbolTable *symbolTable, const char *id) {
 		symbol = symbolTable_getSymbol(symbolTableIter, id);
 	}
 	if (symbol == NULL) {
-		printf("******************** ERROR! ********************\n");
-		printf("lookup for id: %s returned NULL\n", id);
-		printf("************************************************\n");
+		fprintf(outSemantic,"lookup for id: %s returned NULL\n", id);
 	}
 	return symbol;
 }
