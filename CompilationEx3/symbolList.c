@@ -51,8 +51,8 @@ struct symbol* symbolList_getSymbol(struct symbolListEntry *head, const char *id
 }
 
 struct symbolListEntry* symbolList_insertEntry(struct symbolListEntry *head, struct symbol symbol) {
-	if (symbolList_findEntry(head, symbol.id) != NULL) {
-		fprintf(outSemantic,"symbolListEntry with id: %s already present\n", symbol.id);
+	if (symbolList_findEntry(head, symbol.id) != NULL) 
+	{
 		return head;
 	}
 	struct symbolListEntry *headTemp = initializeEntry(symbol);

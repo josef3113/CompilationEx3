@@ -25,5 +25,5 @@ void parse_STATEMENT_t(); // is D'
 void parse_STATEMENT_t2(struct symbol* ); // is E'
 void parse_BLOCK();
 void parse_PARAMETERS_LIST();
-void parse_EXPRESSION();
-void parse_EXPRESSION_t(); // is F'
+enum Type parse_EXPRESSION();
+enum Type parse_EXPRESSION_t(struct symbol*); // is F'

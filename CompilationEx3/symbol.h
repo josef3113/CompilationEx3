@@ -5,7 +5,7 @@
 #include "Token.h"
 // <id,type,kind>
 
-enum type { INTEGER, REAL ,ERROR};
+typedef enum type { INTEGER, REAL ,ERROR}Type;
 enum kind { variable, function, parameter };
 
 typedef struct symbol {

@@ -24,10 +24,10 @@ struct symbolTable* symbolTable_addChild(struct symbolTable* symbolTable);
 struct symbolTable* symbolTable_deleteChild(struct symbolTable* symbolTable);
 
 struct symbol* symbolTable_getSymbol(struct symbolTable *symbolTable, const char *id);
-void symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol);
+int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol);
 void symbolTable_deleteSymbol(struct symbolTable *symbolTable, const char *id);
 
-void insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind);
+int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind);
 struct symbol* lookup(struct symbolTable *symbolTable, const char *id);
 
 struct symbolTable* enter_scope(struct symbolTable* symbolTable);

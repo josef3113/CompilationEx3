@@ -80,18 +80,25 @@ struct symbol* symbolTable_getSymbol(struct symbolTable *symbolTable, const char
 	return symbolList_getSymbol(symbolTable->symbolListHead, id);
 }
 
-void symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol) {
+int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol) {
+	struct symbolListEntry* head_old = symbolTable->symbolListHead;
 	symbolTable->symbolListHead = symbolList_insertEntry(symbolTable->symbolListHead, symbol);
+
+	if (head_old == symbolTable->symbolListHead)
+	{
+		return 0;
+	}
+	return 1;
 }
 
 void symbolTable_deleteSymbol(struct symbolTable *symbolTable, const char *id) {
 	symbolTable->symbolListHead = symbolList_deleteEntry(symbolTable->symbolListHead, id);
 }
 
-void insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind) {
+int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind) {
 	struct symbol symbol;
 	initializeSymbol(&symbol, id, type,size, kind);
-	symbolTable_insertSymbol(symbolTable, symbol);
+	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
 struct symbol* lookup(struct symbolTable *symbolTable, const char *id) {
@@ -103,9 +110,6 @@ struct symbol* lookup(struct symbolTable *symbolTable, const char *id) {
 			break;
 		}
 		symbol = symbolTable_getSymbol(symbolTableIter, id);
-	}
-	if (symbol == NULL) {
-		fprintf(outSemantic,"lookup for id: %s returned NULL\n", id);
 	}
 	return symbol;
 }
