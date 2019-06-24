@@ -88,9 +88,9 @@ void symbolTable_deleteSymbol(struct symbolTable *symbolTable, const char *id) {
 	symbolTable->symbolListHead = symbolList_deleteEntry(symbolTable->symbolListHead, id);
 }
 
-void insert(struct symbolTable *symbolTable, const char *id, enum type type, enum kind kind) {
+void insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind) {
 	struct symbol symbol;
-	initializeSymbol(&symbol, id, type, kind);
+	initializeSymbol(&symbol, id, type,size, kind);
 	symbolTable_insertSymbol(symbolTable, symbol);
 }
 

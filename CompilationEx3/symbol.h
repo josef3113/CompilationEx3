@@ -8,13 +8,14 @@
 enum type { INTEGER, REAL ,ERROR};
 enum kind { variable, function, parameter };
 
-struct symbol {
+typedef struct symbol {
 	const char *id;
 	enum type type;
+	int size;
 	enum kind kind;
-};
+}symbol;
 
-void initializeSymbol(struct symbol *symbol, const char *id, enum type type, enum kind kind);
+void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int size, enum kind kind);
 //void freeSymbol(struct symbol *symbol);
 const char* typeToString(enum type type);
 const char* kindToString(enum kind kind);

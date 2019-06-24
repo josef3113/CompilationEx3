@@ -12,7 +12,7 @@ enum type  parse_TYPE();
 void parse_VARIABLES_LIST(enum type);
 void parse_VARIABLES_LIST_t(enum type);
 void parse_VARIABLE(enum type);
-void parse_VARIABLE_t(); // is B'
+int parse_VARIABLE_t(); // is B'
 void parse_FUNC_DEFINITIONS();
 void parse_FUNC_DEFINITIONS_t();
 void parse_FUNC_DEFINITION();
@@ -22,7 +22,7 @@ void parse_STATEMENTS();
 void parse_STATEMENTS_t(); // is C'
 void parse_STATEMENT();
 void parse_STATEMENT_t(); // is D'
-void parse_STATEMENT_t2(); // is E'
+void parse_STATEMENT_t2(struct symbol* ); // is E'
 void parse_BLOCK();
 void parse_PARAMETERS_LIST();
 void parse_EXPRESSION();

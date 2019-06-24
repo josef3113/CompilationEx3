@@ -5,12 +5,11 @@
 static const char *typeString[] = { "INT", "FLOAT", "DOUBLE", "BOOL" };
 static const char *kindString[] = { "variable", "function", "parameter" };
 
-void initializeSymbol(struct symbol *symbol, const char *id, enum type type, enum kind kind) {
+void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int size, enum kind kind) {
 
-	//char symbolId = (char*)malloc(sizeof(id)); 
-	//memcpy(symbolId, id, strlen(id));
 	symbol->id = id;
 	memcpy(&(symbol->type), &type, sizeof(type));
+	symbol->size = size;
 	memcpy(&(symbol->kind), &kind, sizeof(kind));
 }
 

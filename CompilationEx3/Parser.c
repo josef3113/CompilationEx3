@@ -244,17 +244,18 @@ void parse_VARIABLES_LIST_t(enum type type)
 void parse_VARIABLE(enum type type)
 {
 	Token*	curr_token = next_token();
+	int size_of_var;
 
 	switch (curr_token->kind)
 	{
 	case TOKEN_ID:
 	{
 		fprintf(outSyntactic, "Rule (VARIABLE -> id VARIABLE_t) \n");
-		parse_VARIABLE_t();
+		size_of_var = parse_VARIABLE_t();
 		
-		// semantic 
-		insert(symbolTable, curr_token->lexeme, type, variable);
-		//printf("lexme:%s type:%d \n", curr_token->lexeme, type);
+		// semantic                          
+		insert(symbolTable, curr_token->lexeme, type, size_of_var, variable);
+		printf("lexme:%s type:%d  size:%d \n", curr_token->lexeme, type,size_of_var);
 
 	}break;
 	default:
@@ -271,17 +272,26 @@ void parse_VARIABLE(enum type type)
 	}
 }
 
-void parse_VARIABLE_t()
+int parse_VARIABLE_t()
 {
 	Token*	curr_token = next_token();
+	Token*  token_for_size = NULL;
 
 	switch (curr_token->kind)
 	{
 	case TOKEN_SEP_L_BRACKET:
 	{
 		fprintf(outSyntactic, "Rule (VARIABLE_t -> [int_number] ) \n");
+
+		//semantic
+		token_for_size = next_token();
+		back_token();
+
 		match(TOKEN_INT_NUBMER);
 		match(TOKEN_SEP_R_BRACKET);
+
+		// semantic
+		return atoi(token_for_size->lexeme);
 	}break;
 
 	//follow
@@ -292,6 +302,9 @@ void parse_VARIABLE_t()
 	{
 		fprintf(outSyntactic, "Rule (VARIABLE_t -> EPSILON ) \n");
 		back_token();
+
+		//semantic
+		return -1;
 	}break;
 	default:
 	{
@@ -303,6 +316,9 @@ void parse_VARIABLE_t()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return -2;
 	}
 	}
 }
@@ -564,9 +580,8 @@ void parse_STATEMENT()
 		fprintf(outSyntactic, "Rule (STATEMENT -> id STATEMENT_t2 ) \n");
 
 		// semantic
-		lookup(symbolTable, curr_token->lexeme);
-
-		parse_STATEMENT_t2();
+		struct symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+		parse_STATEMENT_t2(entry_of_id);
 	}break;
 
 	case TOKEN_SEP_L_CURLY_BRACKET:
@@ -635,7 +650,7 @@ void parse_STATEMENT_t()
 	}
 }
 
-void parse_STATEMENT_t2()
+void parse_STATEMENT_t2(symbol* entry_of_id)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -645,8 +660,29 @@ void parse_STATEMENT_t2()
 	{
 		fprintf(outSyntactic, "Rule (STATEMENT_t2 -> VARIABLE_t = EXPRESSION ) \n");
 
-		back_token();
-		parse_VARIABLE_t();
+		//semantic 
+		if (entry_of_id != NULL) {
+			int size_of_id = entry_of_id->size;
+			int size_of_VARIABLE_t;
+
+			back_token();
+			size_of_VARIABLE_t = parse_VARIABLE_t();
+
+			//semantic 
+			if (size_of_id > -1 && size_of_VARIABLE_t == -1)
+			{
+				fprintf(outSemantic, "ERROR at line:%d - can't to assign to array \n", curr_token->lineNumber);
+				//return ERROR;
+			}
+			else if (size_of_id == -1 && size_of_VARIABLE_t != -1)
+			{
+				fprintf(outSemantic, "ERROR at line:%d - you try use in val like array \n", curr_token->lineNumber);
+			}
+			else if (size_of_id > -1 && size_of_VARIABLE_t > size_of_id)
+			{
+				fprintf(outSemantic, "ERROR at line:%d - out of bound array \n", curr_token->lineNumber);
+			}
+		}
 		match(TOKEN_OP_ASSIGN);
 		parse_EXPRESSION();
 	}break;
