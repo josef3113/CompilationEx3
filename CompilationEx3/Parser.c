@@ -669,14 +669,16 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 	{
 		fprintf(outSyntactic, "Rule (STATEMENT_t2 -> VARIABLE_t = EXPRESSION ) \n");
 
+		// semantic
+		int size_of_VARIABLE_t;
+
+		back_token();
+		size_of_VARIABLE_t = parse_VARIABLE_t();
+
 		//semantic 
 		if (entry_of_id != NULL) 
 		{
 			int size_of_id = entry_of_id->size;
-			int size_of_VARIABLE_t;
-
-			back_token();
-			size_of_VARIABLE_t = parse_VARIABLE_t();
 
 			//semantic 
 			if (size_of_id > -1 && size_of_VARIABLE_t == -1)
@@ -696,11 +698,13 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 				fprintf(outSemantic, "ERROR at line:%d - out of bound array \n", curr_token->lineNumber);
 			}
 		}
+
+
 		match(TOKEN_OP_ASSIGN);
 		Type type_of_EXPRESSION = parse_EXPRESSION();
 
 		//semantic
-		if (type_of_EXPRESSION != ERROR)
+		if (entry_of_id != NULL && type_of_EXPRESSION != ERROR)
 		{
 			if (entry_of_id->type == INTEGER && type_of_EXPRESSION != INTEGER)
 			{
@@ -806,10 +810,11 @@ Type parse_EXPRESSION()
 
 		//semantic
 		symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+		Type type_to_return;
 		if (entry_of_id == NULL)
 		{
 			fprintf(outSemantic, "ERROR at line: %d the id with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
-			return ERROR;
+			type_to_return = ERROR;
 		}
 
 		Type type_of_EXPRESSION_t = parse_EXPRESSION_t(entry_of_id);
@@ -819,17 +824,18 @@ Type parse_EXPRESSION()
 		{
 			if (entry_of_id->type == INTEGER && type_of_EXPRESSION_t == INTEGER)
 			{
-				return INTEGER;
+				type_to_return = INTEGER;
 			}
 			else
 			{
-				return REAL;
+				type_to_return = REAL;
 			}
 		}
 		else
 		{
-			return ERROR;
+			type_to_return = ERROR;
 		}
+		return type_to_return;
 	}break;
 
 	case TOKEN_REAL_NUMBER:
@@ -871,16 +877,17 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 	{
 		fprintf(outSyntactic, "Rule (EXPRESSION_t -> VARIABLE_t ) \n");
 
+		//semantic
+		int size_of_VARIABLE_t;
+
+		back_token();
+		size_of_VARIABLE_t = parse_VARIABLE_t();
+
 		//semantic 
 		if (entry_of_id != NULL)
 		{
 			int size_of_id = entry_of_id->size;
-			int size_of_VARIABLE_t;
 
-			back_token();
-			size_of_VARIABLE_t = parse_VARIABLE_t();
-
-			printf("here size id : %d  size vari_t : %d \n", size_of_id, size_of_VARIABLE_t);
 			//semantic 
 			if (size_of_id > -1 && size_of_VARIABLE_t == -1)
 			{
@@ -902,7 +909,6 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 			}
 			else
 			{
-				printf("here type is: %d \n", entry_of_id->type);
 				return entry_of_id->type;
 			}
 		}
@@ -932,16 +938,21 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 
 		back_token();
 		//semantic todo - need to check this id is not function
-		if (entry_of_id->size == -1)
+		if (entry_of_id != NULL)
 		{
-			return entry_of_id->type;
+			if (entry_of_id->size == -1)
+			{
+				return entry_of_id->type;
+			}
+			else
+			{
+				// role-7 and 5
+				fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
+				return ERROR;
+			}
 		}
-		else
-		{
-			// role-7 and 5
-			fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
-			return ERROR;
-		}
+		return ERROR;
+		
 		
 	}break;
 
