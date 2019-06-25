@@ -500,12 +500,6 @@ void parse_FUNC_DEFINITION()
 		symbolTable = enter_scope(symbolTable);
 
 		num_of_PARAM_DEFINITIONS = parse_PARAM_DEFINITIONS();
-		
-		match(TOKEN_SEP_R_ROUND_BRACKET);
-		parse_BLOCK();
-
-		//semantic
-		symbolTable = exit_scope(symbolTable);
 
 		//semantic - update the real num of parameters of function
 		if (inserted)
@@ -513,6 +507,13 @@ void parse_FUNC_DEFINITION()
 			symbol* entry_of_function = lookup(symbolTable, token_of_id->lexeme);
 			entry_of_function->size = num_of_PARAM_DEFINITIONS;
 		}
+		
+		match(TOKEN_SEP_R_ROUND_BRACKET);
+		parse_BLOCK();
+
+		//semantic
+		symbolTable = exit_scope(symbolTable);
+		
 	
 	}break;
 
@@ -843,7 +844,7 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 		{
 			if (entry_of_id->size != num_of_PARAMETERS_LIST)
 			{
-				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs \n", curr_token->lineNumber);
+				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size, num_of_PARAMETERS_LIST);
 			}
 		}
 
