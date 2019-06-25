@@ -5,13 +5,14 @@
 #include "Token.h"
 // <id,type,kind>
 
-typedef enum type { INTEGER, REAL ,ERROR}Type;
+typedef enum type { VOID,INTEGER, REAL ,ERROR}Type;
+typedef enum action {TO_USE,TO_DEFINE}Action;
 enum kind { variable, function, parameter };
 
 typedef struct symbol {
 	const char *id;
 	enum type type;
-	int size;
+	int size; // size or num parameters
 	enum kind kind;
 }symbol;
 

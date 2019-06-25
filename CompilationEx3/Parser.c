@@ -8,6 +8,7 @@ struct symbolTable *symbolTable;
 void parse_PROGRAM()
 {
 	// semantic 
+	// global table - contain scoop main and function
 	symbolTable = (struct symbolTable*)malloc(sizeof(struct symbolTable));
 	symbolTable->symbolListHead = NULL;
 	symbolTable->parentSymbolTable = NULL;
@@ -20,11 +21,21 @@ void parse_PROGRAM()
 	{
 	case TOKEN_KEY_PROGRAM:
 	{
+		//semantic 
+		// main scoop insert 
+		symbolTable = enter_scope(symbolTable);
+
 		fprintf(outSyntactic, "Rule (PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS) \n");
 		parse_VAR_DEFINITIONS();
 		match(TOKEN_SEP_SEMICOLON);
 		parse_STATEMENTS();
 		match(TOKEN_KEY_END);
+
+		//semantic 
+		// main scoop exit
+		symbolTable = exit_scope(symbolTable);
+
+
 		parse_FUNC_DEFINITIONS();
 
 	}break;
@@ -45,7 +56,7 @@ void parse_PROGRAM()
 }
 
 
-void parse_VAR_DEFINITIONS()
+int parse_VAR_DEFINITIONS()
 {
 	Token*	curr_token = next_token();
 
@@ -55,10 +66,16 @@ void parse_VAR_DEFINITIONS()
 	case TOKEN_KEY_REAL:
 	case TOKEN_KEY_INTEGER:
 	{
+		// semantic 
+		int num_of_VAR_DEFINITION, num_of_VAR_DEFINITIONS_t;
+
 		fprintf(outSyntactic, "Rule (VAR_DEFINITIONS -> VAR_DEFINITION VAR_DEFINITIONS_t) \n");
 		back_token();
-		parse_VAR_DEFINITION();
-		parse_VAR_DEFINITIONS_t();
+		num_of_VAR_DEFINITION = parse_VAR_DEFINITION();
+		num_of_VAR_DEFINITIONS_t = parse_VAR_DEFINITIONS_t();
+
+		//semantic
+		return num_of_VAR_DEFINITION + num_of_VAR_DEFINITIONS_t;
 
 	}break;
 
@@ -71,11 +88,14 @@ void parse_VAR_DEFINITIONS()
 			curr_token = next_token();
 		}
 		back_token();
+
+		// semantic todo
+		return -1;
 	}
 	}
 }
 
-void parse_VAR_DEFINITIONS_t()
+int parse_VAR_DEFINITIONS_t()
 {
 	Token*	curr_token = next_token();
 
@@ -89,12 +109,15 @@ void parse_VAR_DEFINITIONS_t()
 		if (curr_token->kind == TOKEN_KEY_REAL || curr_token->kind == TOKEN_KEY_INTEGER)
 		{
 			fprintf(outSyntactic, "Rule (VAR_DEFINITIONS_t -> ; VAR_DEFINITIONS) \n");
-			parse_VAR_DEFINITIONS();
+			return parse_VAR_DEFINITIONS();
 		}
 		else
 		{
 			fprintf(outSyntactic, "Rule (VAR_DEFINITIONS_t -> EPSILON) \n");
 			back_token();
+
+			//semantic 
+			return 0;
 		}
 	}break;
 
@@ -102,6 +125,9 @@ void parse_VAR_DEFINITIONS_t()
 	{
 		fprintf(outSyntactic, "Rule (VAR_DEFINITIONS_t -> EPSILON) \n");
 		back_token();
+
+		//semantic 
+		return 0;
 	}break;
 
 	default:
@@ -113,11 +139,14 @@ void parse_VAR_DEFINITIONS_t()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return -1;
 	}
 	}
 }
 
-void parse_VAR_DEFINITION()
+int parse_VAR_DEFINITION()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -129,7 +158,7 @@ void parse_VAR_DEFINITION()
 
 		back_token();
 		enum type type = parse_TYPE();
-		parse_VARIABLES_LIST(type);
+		return parse_VARIABLES_LIST(TO_DEFINE, type);
 	}break;
 
 	default:
@@ -142,6 +171,9 @@ void parse_VAR_DEFINITION()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo 
+		return -1;
 	}
 	}
 }
@@ -182,17 +214,23 @@ enum type parse_TYPE()
 	}
 }
 
-void parse_VARIABLES_LIST(enum type type)
+int parse_VARIABLES_LIST(enum action action,enum type type)
 {
 	Token* curr_token = next_token();
 	switch (curr_token->kind)
 	{
 	case TOKEN_ID:
 	{
+		//semantic 
+		int num_of_VARIABLES_LIST_t;
+
 		fprintf(outSyntactic, "Rule (VARIABLES_LIST -> VARIABLE VARIABLES_LIST_t) \n");
 		back_token();
-		parse_VARIABLE(type);
-		parse_VARIABLES_LIST_t(type);
+		parse_VARIABLE(action, type);
+		num_of_VARIABLES_LIST_t = parse_VARIABLES_LIST_t(action, type);
+
+		//semantic
+		return num_of_VARIABLES_LIST_t + 1;
 	}break;
 	default:
 	{
@@ -204,20 +242,29 @@ void parse_VARIABLES_LIST(enum type type)
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return -1;
 	}
 	}
 }
 
-void parse_VARIABLES_LIST_t(enum type type)
+int parse_VARIABLES_LIST_t(enum action action,enum type type)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
 	{
 	case TOKEN_SEP_COMMA:
 	{
+		//semantic
+		int num_of_VARIABLES_LIST_t;
+
 		fprintf(outSyntactic, "Rule (VARIABLES_LIST_t -> ,VARIABLE VARIABLES_LIST_t) \n");
-		parse_VARIABLE(type);
-		parse_VARIABLES_LIST_t(type);
+		parse_VARIABLE(action, type);
+		num_of_VARIABLES_LIST_t = parse_VARIABLES_LIST_t(action, type);
+
+		//semantic
+		return num_of_VARIABLES_LIST_t + 1;
 	}break;
 
 	//follow
@@ -226,6 +273,9 @@ void parse_VARIABLES_LIST_t(enum type type)
 	{
 		fprintf(outSyntactic, "Rule (VARIABLES_LIST_t -> EPSILON ) \n");
 		back_token();
+
+		//semantic
+		return 0;
 	}break;
 	default:
 	{
@@ -237,13 +287,18 @@ void parse_VARIABLES_LIST_t(enum type type)
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return -1;
 	}
 	}
 }
 
-void parse_VARIABLE(enum type type)
+void parse_VARIABLE(enum action action,enum type type)
 {
 	Token*	curr_token = next_token();
+	
+	//semantic
 	int size_of_var;
 	int inserted;
 
@@ -253,12 +308,24 @@ void parse_VARIABLE(enum type type)
 	{
 		fprintf(outSyntactic, "Rule (VARIABLE -> id VARIABLE_t) \n");
 		size_of_var = parse_VARIABLE_t();
-		
-		// semantic                          
-		inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, variable);
-		if (!inserted)
+
+		if (action == TO_USE)
 		{
-			fprintf(outSemantic,"ERROR at line: %d the var with lexme:%s alredy define\n", curr_token->lineNumber , curr_token->lexeme);
+			symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+			if (entry_of_id == NULL)
+			{
+				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
+			}
+		}
+
+		else // want to define var with name curr_token->lexeme
+		{
+			// semantic                          
+			inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, variable);
+			if (!inserted)
+			{
+				fprintf(outSemantic, "ERROR at line: %d the variable with lexme:%s alredy define\n", curr_token->lineNumber, curr_token->lexeme);
+			}
 		}
 		//printf("lexme:%s type:%d  size:%d \n", curr_token->lexeme, type,size_of_var);
 
@@ -404,15 +471,49 @@ void parse_FUNC_DEFINITION()
 	case TOKEN_KEY_REAL:
 	case TOKEN_KEY_INTEGER:
 	{
+		//semantic 
+		Type type_of_RETURNED_TYPE;
+		int num_of_PARAM_DEFINITIONS;
+		int inserted;
+
+
 		fprintf(outSyntactic, "Rule (FUNC_DEFINITION -> RETURNED_TYPE id (PARAM_DEFINITIONS) BLOCK ) \n");
 
 		back_token();
-		parse_RETURNED_TYPE();
+		type_of_RETURNED_TYPE = parse_RETURNED_TYPE();
+		
+		// semantic
+		Token* token_of_id = next_token();
+		back_token();
+
 		match(TOKEN_ID);
 		match(TOKEN_SEP_L_ROUND_BRACKET);
-		parse_PARAM_DEFINITIONS();
+
+		//semantic
+		inserted = insert(symbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, -1 , function);
+		if (!inserted)
+		{
+			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define\n", token_of_id->lineNumber, token_of_id->lexeme);
+		}
+
+		// semantic - do this here becous i want the names of parametrs will be in list symbol of this function
+		symbolTable = enter_scope(symbolTable);
+
+		num_of_PARAM_DEFINITIONS = parse_PARAM_DEFINITIONS();
+		
 		match(TOKEN_SEP_R_ROUND_BRACKET);
 		parse_BLOCK();
+
+		//semantic
+		symbolTable = exit_scope(symbolTable);
+
+		//semantic - update the real num of parameters of function
+		if (inserted)
+		{
+			symbol* entry_of_function = lookup(symbolTable, token_of_id->lexeme);
+			entry_of_function->size = num_of_PARAM_DEFINITIONS;
+		}
+	
 	}break;
 
 	default:
@@ -429,7 +530,7 @@ void parse_FUNC_DEFINITION()
 	}
 }
 
-void parse_RETURNED_TYPE()
+Type parse_RETURNED_TYPE()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -437,6 +538,9 @@ void parse_RETURNED_TYPE()
 	case TOKEN_KEY_VOID:
 	{
 		fprintf(outSyntactic, "Rule (RETURNED_TYPE -> void ) \n");
+
+		//semantic
+		return VOID;
 	}break;
 	case TOKEN_KEY_REAL:
 	case TOKEN_KEY_INTEGER:
@@ -444,7 +548,10 @@ void parse_RETURNED_TYPE()
 		fprintf(outSyntactic, "Rule (RETURNED_TYPE -> TYPE ) \n");
 
 		back_token();
-		parse_TYPE();
+		Type type_of_TYPE = parse_TYPE();
+
+		//semantic
+		return type_of_TYPE;
 	}break;
 
 	default:
@@ -457,11 +564,14 @@ void parse_RETURNED_TYPE()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return ERROR;
 	}
 	}
 }
 
-void parse_PARAM_DEFINITIONS()
+int parse_PARAM_DEFINITIONS()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -473,7 +583,7 @@ void parse_PARAM_DEFINITIONS()
 		fprintf(outSyntactic, "Rule (PARAM_DEFINITIONS -> VAR_DEFINITIONS ) \n");
 
 		back_token();
-		parse_VAR_DEFINITIONS();
+		return parse_VAR_DEFINITIONS();
 	}break;
 
 	// follow
@@ -482,6 +592,9 @@ void parse_PARAM_DEFINITIONS()
 		fprintf(outSyntactic, "Rule (PARAM_DEFINITIONS -> EPSILON ) \n");
 
 		back_token();
+
+		// semantic 
+		return 0;
 	}break;
 
 	default:
@@ -494,6 +607,9 @@ void parse_PARAM_DEFINITIONS()
 			curr_token = next_token();
 		}
 		back_token();
+
+		// semantic todo
+		return -1;
 	}
 	}
 }
@@ -588,7 +704,7 @@ void parse_STATEMENT()
 		symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
 		if (entry_of_id == NULL)
 		{
-			fprintf(outSemantic, "ERROR at line: %d the id with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
+			fprintf(outSemantic, "ERROR at line: %d the variable / function with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
 		}
 		parse_STATEMENT_t2(entry_of_id);
 	}break;
@@ -715,9 +831,22 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 
 	case TOKEN_SEP_L_ROUND_BRACKET:
 	{
+		// semantic
+		int num_of_PARAMETERS_LIST;
+
 		fprintf(outSyntactic, "Rule (STATEMENT_t2 -> ( PARAMETERS_LIST ) ) \n");
 
-		parse_PARAMETERS_LIST();
+		num_of_PARAMETERS_LIST = parse_PARAMETERS_LIST();
+
+		//semantic
+		if (entry_of_id != NULL)
+		{
+			if (entry_of_id->size != num_of_PARAMETERS_LIST)
+			{
+				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs \n", curr_token->lineNumber);
+			}
+		}
+
 		match(TOKEN_SEP_R_ROUND_BRACKET);
 	}break;
 
@@ -765,7 +894,7 @@ void parse_BLOCK()
 }
 
 
-void parse_PARAMETERS_LIST()
+int parse_PARAMETERS_LIST()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -775,7 +904,7 @@ void parse_PARAMETERS_LIST()
 		fprintf(outSyntactic, "Rule (PARAMETERS_LIST -> VARIABLES_LIST ) \n");
 
 		back_token();
-		parse_VARIABLES_LIST(ERROR); // semantic need to change this !-!-!
+		return parse_VARIABLES_LIST(TO_USE,VOID); // semantic need to change this !-!-!
 	}break;
 
 	case TOKEN_SEP_R_ROUND_BRACKET:
@@ -783,6 +912,9 @@ void parse_PARAMETERS_LIST()
 		fprintf(outSyntactic, "Rule (PARAMETERS_LIST -> EPSILON ) \n");
 
 		back_token();
+
+		//semantic 
+		return 0;
 	}break;
 
 	default:
@@ -795,6 +927,9 @@ void parse_PARAMETERS_LIST()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return -1;
 	}
 	}
 }
@@ -813,7 +948,7 @@ Type parse_EXPRESSION()
 		Type type_to_return;
 		if (entry_of_id == NULL)
 		{
-			fprintf(outSemantic, "ERROR at line: %d the id with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
+			fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
 			type_to_return = ERROR;
 		}
 
