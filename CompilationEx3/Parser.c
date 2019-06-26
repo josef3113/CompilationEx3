@@ -473,6 +473,7 @@ void parse_FUNC_DEFINITION()
 	{
 		//semantic 
 		Type type_of_RETURNED_TYPE;
+		Type type_of_BLOCK;
 		int num_of_PARAM_DEFINITIONS;
 		int inserted;
 
@@ -509,11 +510,26 @@ void parse_FUNC_DEFINITION()
 		}
 		
 		match(TOKEN_SEP_R_ROUND_BRACKET);
-		parse_BLOCK();
+		type_of_BLOCK = parse_BLOCK();
 
 		//semantic
 		symbolTable = exit_scope(symbolTable);
 		
+		//semantic
+		if (type_of_RETURNED_TYPE == VOID)
+		{
+			if (type_of_BLOCK != EMPTY && type_of_BLOCK != VOID)
+			{
+				fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s define void but return other type\n", token_of_id->lineNumber, token_of_id->lexeme);
+			}
+		}
+		else
+		{
+			if (type_of_BLOCK != type_of_RETURNED_TYPE)
+			{
+				fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s miss match return type\n", token_of_id->lineNumber, token_of_id->lexeme);
+			}
+		}
 	
 	}break;
 
@@ -615,7 +631,7 @@ int parse_PARAM_DEFINITIONS()
 	}
 }
 
-void parse_STATEMENTS()
+Type parse_STATEMENTS()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -627,9 +643,27 @@ void parse_STATEMENTS()
 		fprintf(outSyntactic, "Rule (STATEMENTS -> STATEMENT;STATEMENTS_t ) \n");
 
 		back_token();
-		parse_STATEMENT();
+		Type type_of_STATEMENT = parse_STATEMENT();
 		match(TOKEN_SEP_SEMICOLON);
-		parse_STATEMENTS_t();
+		Type type_of_STATEMENTS_t = parse_STATEMENTS_t();
+
+		// semantic
+		if (type_of_STATEMENT == type_of_STATEMENTS_t)
+		{
+			return type_of_STATEMENT;
+		}
+		else if (type_of_STATEMENT == EMPTY)
+		{
+			return type_of_STATEMENTS_t;
+		}
+		else if (type_of_STATEMENTS_t == EMPTY)
+		{
+			return type_of_STATEMENT;
+		}
+		else // two type diff from empty its iilegal
+		{
+			return ERROR;
+		}
 	}break;
 
 
@@ -643,11 +677,14 @@ void parse_STATEMENTS()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return ERROR;
 	}
 	}
 }
 
-void parse_STATEMENTS_t()
+Type parse_STATEMENTS_t()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -659,7 +696,7 @@ void parse_STATEMENTS_t()
 		fprintf(outSyntactic, "Rule (STATEMENTS_t -> STATEMENTS ) \n");
 
 		back_token();
-		parse_STATEMENTS();
+		return parse_STATEMENTS();
 	}break;
 
 	case TOKEN_KEY_END:
@@ -668,6 +705,9 @@ void parse_STATEMENTS_t()
 		fprintf(outSyntactic, "Rule (STATEMENTS_t -> EPSILON ) \n");
 
 		back_token();
+
+		//semantic 
+		return EMPTY;
 	}break;
 
 
@@ -681,11 +721,14 @@ void parse_STATEMENTS_t()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return ERROR;
 	}
 	}
 }
 
-void parse_STATEMENT()
+Type parse_STATEMENT()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -694,7 +737,7 @@ void parse_STATEMENT()
 	{
 		fprintf(outSyntactic, "Rule (STATEMENT -> return STATEMENT_t ) \n");
 
-		parse_STATEMENT_t();
+		return parse_STATEMENT_t();
 	}break;
 
 	case TOKEN_ID:
@@ -708,6 +751,9 @@ void parse_STATEMENT()
 			fprintf(outSemantic, "ERROR at line: %d the variable / function with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
 		}
 		parse_STATEMENT_t2(entry_of_id);
+
+		// semantic
+		return EMPTY;
 	}break;
 
 	case TOKEN_SEP_L_CURLY_BRACKET:
@@ -724,6 +770,9 @@ void parse_STATEMENT()
 		// semantic 
 		symbolTable = exit_scope(symbolTable);
 
+		// semantic
+		return EMPTY;
+
 	}break;
 
 	default:
@@ -736,11 +785,14 @@ void parse_STATEMENT()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return ERROR;
 	}
 	}
 }
 
-void parse_STATEMENT_t()
+Type parse_STATEMENT_t()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -752,7 +804,7 @@ void parse_STATEMENT_t()
 		fprintf(outSyntactic, "Rule (STATEMENT_t -> EXPRESSION ) \n");
 
 		back_token();
-		parse_EXPRESSION();
+		return parse_EXPRESSION();
 	}break;
 
 	case TOKEN_SEP_SEMICOLON:
@@ -760,6 +812,9 @@ void parse_STATEMENT_t()
 		fprintf(outSyntactic, "Rule (STATEMENT_t -> EPSILON ) \n");
 
 		back_token();
+
+		//semantic 
+		return VOID;
 	}break;
 
 	default:
@@ -772,6 +827,9 @@ void parse_STATEMENT_t()
 			curr_token = next_token();
 		}
 		back_token();
+		
+		// semantic todo
+		return ERROR;
 	}
 	}
 }
@@ -797,8 +855,12 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 		{
 			int size_of_id = entry_of_id->size;
 
-			//semantic 
-			if (size_of_id > -1 && size_of_VARIABLE_t == -1)
+			//semantic
+			if (entry_of_id->kind == function)
+			{
+				fprintf(outSemantic, "ERROR at line:%d - you try to do assignment to function \n", curr_token->lineNumber);
+			} 
+			else if (size_of_id > -1 && size_of_VARIABLE_t == -1)
 			{
 				// role-7 and 5
 				fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
@@ -866,7 +928,7 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 }
 
 
-void parse_BLOCK()
+Type parse_BLOCK()
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -877,8 +939,11 @@ void parse_BLOCK()
 
 		parse_VAR_DEFINITIONS();
 		match(TOKEN_SEP_SEMICOLON);
-		parse_STATEMENTS();
+		Type type_of_STATEMENTS = parse_STATEMENTS();
 		match(TOKEN_SEP_R_CURLY_BRACKET);
+
+		//semantic
+		return type_of_STATEMENTS;
 	}break;
 	default:
 	{
@@ -890,6 +955,9 @@ void parse_BLOCK()
 			curr_token = next_token();
 		}
 		back_token();
+
+		//semantic todo
+		return ERROR;
 	}
 	}
 }
@@ -1025,7 +1093,12 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 			int size_of_id = entry_of_id->size;
 
 			//semantic 
-			if (size_of_id > -1 && size_of_VARIABLE_t == -1)
+			if (entry_of_id->kind == function)
+			{
+				fprintf(outSemantic, "ERROR at line:%d - you try to use function - in this grammer is ban \n", curr_token->lineNumber);
+				return ERROR;
+			}
+			else if (size_of_id > -1 && size_of_VARIABLE_t == -1)
 			{
 				// role-7 and 5
 				fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
@@ -1076,16 +1149,25 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 		//semantic todo - need to check this id is not function
 		if (entry_of_id != NULL)
 		{
-			if (entry_of_id->size == -1)
+			if (entry_of_id->kind == function)
 			{
-				return entry_of_id->type;
+				fprintf(outSemantic, "ERROR at line:%d - you try to use function - in this grammer is ban \n", curr_token->lineNumber);
+				return ERROR;
 			}
 			else
 			{
-				// role-7 and 5
-				fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
-				return ERROR;
+				if (entry_of_id->size == -1)
+				{
+					return entry_of_id->type;
+				}
+				else
+				{
+					// role-7 and 5
+					fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
+					return ERROR;
+				}
 			}
+			
 		}
 		return ERROR;
 		

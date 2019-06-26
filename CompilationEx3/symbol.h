@@ -5,7 +5,7 @@
 #include "Token.h"
 // <id,type,kind>
 
-typedef enum type { VOID,INTEGER, REAL ,ERROR}Type;
+typedef enum type { VOID,INTEGER, REAL ,ERROR,EMPTY}Type;
 typedef enum action {TO_USE,TO_DEFINE}Action;
 enum kind { variable, function, parameter };
 
