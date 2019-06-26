@@ -5,13 +5,15 @@
 static const char *typeString[] = { "INT", "FLOAT", "DOUBLE", "BOOL" };
 static const char *kindString[] = { "variable", "function", "parameter" };
 
-void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int size, enum kind kind) {
+void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int size, enum kind kind,int num_of_line)
+{
 
 	symbol->id = id;
 	memcpy(&(symbol->type), &type, sizeof(type));
 	symbol->size = size;
 	memcpy(&(symbol->kind), &kind, sizeof(kind));
 	symbol->used = NOT_USED;
+	symbol->num_line_decler = num_of_line;
 }
 
 const char* typeToString(enum type type) {

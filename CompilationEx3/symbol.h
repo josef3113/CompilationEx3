@@ -8,7 +8,7 @@
 typedef enum type { VOID,INTEGER, REAL ,ERROR,EMPTY}Type;
 typedef enum action {TO_USE,TO_DEFINE}Action;
 enum kind { variable, function };
-enum use {USED, NOT_USED};
+enum use {NOT_USED,USED};
 
 typedef struct symbol {
 	const char *id;
@@ -16,9 +16,10 @@ typedef struct symbol {
 	int size; // size or num parameters
 	enum kind kind;
 	enum use used;
+	int num_line_decler;
 }symbol;
 
-void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int size, enum kind kind );
+void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int size, enum kind kind,int num_of_line );
 //void freeSymbol(struct symbol *symbol);
 const char* typeToString(enum type type);
 const char* kindToString(enum kind kind);

@@ -38,6 +38,9 @@ void parse_PROGRAM()
 
 		parse_FUNC_DEFINITIONS();
 
+		// go out from global table
+		exit_scope(symbolTable);
+
 	}break;
 
 	default:
@@ -321,10 +324,12 @@ void parse_VARIABLE(enum action action,enum type type)
 		else // want to define var with name curr_token->lexeme
 		{
 			// semantic                          
-			inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, variable);
+			inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, variable, curr_token->lineNumber);
 			if (!inserted)
 			{
-				fprintf(outSemantic, "ERROR at line: %d the variable with lexme:%s alredy define\n", curr_token->lineNumber, curr_token->lexeme);
+				symbol* entry_of_variable = symbolTable_getSymbol(symbolTable, curr_token->lexeme);  // find this in current table
+				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s alredy define at line: %d \n",
+						curr_token->lineNumber, curr_token->lexeme,entry_of_variable->num_line_decler);
 			}
 		}
 		//printf("lexme:%s type:%d  size:%d \n", curr_token->lexeme, type,size_of_var);
@@ -491,10 +496,12 @@ void parse_FUNC_DEFINITION()
 		match(TOKEN_SEP_L_ROUND_BRACKET);
 
 		//semantic
-		inserted = insert(symbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, -1 , function);
+		inserted = insert(symbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, -1 , function, curr_token ->lineNumber);
 		if (!inserted)
 		{
-			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define\n", token_of_id->lineNumber, token_of_id->lexeme);
+			symbol* entry_of_function = symbolTable_getSymbol(symbolTable, token_of_id->lexeme);
+			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define at line: %d \n",
+					token_of_id->lineNumber, token_of_id->lexeme, entry_of_function->num_line_decler);
 		}
 
 		// semantic - do this here becous i want the names of parametrs will be in list symbol of this function
@@ -506,6 +513,10 @@ void parse_FUNC_DEFINITION()
 		if (inserted)
 		{
 			symbol* entry_of_function = lookup(symbolTable, token_of_id->lexeme);
+			entry_of_function->used = NOT_USED; // when i do lookup the system change that i use with this
+												// id but actuly i only sertch this to find line number
+												// becous in first all declertion i can to chang to NOT_USE
+												// becous here i still in definition
 			entry_of_function->size = num_of_PARAM_DEFINITIONS;
 		}
 		

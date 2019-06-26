@@ -27,7 +27,7 @@ struct symbol* symbolTable_getSymbol(struct symbolTable *symbolTable, const char
 int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol);
 void symbolTable_deleteSymbol(struct symbolTable *symbolTable, const char *id);
 
-int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind);
+int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind, int num_line);
 struct symbol* lookup(struct symbolTable *symbolTable, const char *id);
 
 struct symbolTable* enter_scope(struct symbolTable* symbolTable);

@@ -95,9 +95,9 @@ void symbolTable_deleteSymbol(struct symbolTable *symbolTable, const char *id) {
 	symbolTable->symbolListHead = symbolList_deleteEntry(symbolTable->symbolListHead, id);
 }
 
-int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind) {
+int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind,int num_line) {
 	struct symbol symbol;
-	initializeSymbol(&symbol, id, type,size, kind);
+	initializeSymbol(&symbol, id, type,size, kind,num_line);
 	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
@@ -130,7 +130,7 @@ struct symbolTable* exit_scope(struct symbolTable* symbolTable) {
 	{
 		if (head->symbol.used == NOT_USED)
 		{
-			fprintf(outSemantic,"WARNING the id with lexme : %s not used \n", head->symbol.id);
+			fprintf(outSemantic,"WARNING at line: %d the id with lexme: %s not used \n", head->symbol.num_line_decler, head->symbol.id);
 		}
 		head = head->nextEntry;
 	}
