@@ -11,6 +11,7 @@ void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int 
 	memcpy(&(symbol->type), &type, sizeof(type));
 	symbol->size = size;
 	memcpy(&(symbol->kind), &kind, sizeof(kind));
+	symbol->used = NOT_USED;
 }
 
 const char* typeToString(enum type type) {

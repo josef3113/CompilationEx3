@@ -111,6 +111,10 @@ struct symbol* lookup(struct symbolTable *symbolTable, const char *id) {
 		}
 		symbol = symbolTable_getSymbol(symbolTableIter, id);
 	}
+	if (symbol != NULL)
+	{
+		symbol->used = USED;
+	}
 	return symbol;
 }
 
@@ -119,5 +123,18 @@ struct symbolTable* enter_scope(struct symbolTable* symbolTable) {
 }
 
 struct symbolTable* exit_scope(struct symbolTable* symbolTable) {
+
+	//semantic
+	struct symbolListEntry* head = symbolTable->symbolListHead;
+	while (head != NULL)
+	{
+		if (head->symbol.used == NOT_USED)
+		{
+			fprintf(outSemantic,"WARNING the id with lexme : %s not used \n", head->symbol.id);
+		}
+		head = head->nextEntry;
+	}
+
+
 	return symbolTable_getParent(symbolTable);
 }
