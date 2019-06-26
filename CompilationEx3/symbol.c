@@ -10,7 +10,7 @@ void initializeSymbol(struct symbol *symbol, const char *id, enum type type,int 
 
 	symbol->id = id;
 	memcpy(&(symbol->type), &type, sizeof(type));
-	symbol->size = size;
+	symbol->size_arry_or_num_parameters = size;
 	memcpy(&(symbol->kind), &kind, sizeof(kind));
 	symbol->used = NOT_USED;
 	symbol->num_line_decler = num_of_line;

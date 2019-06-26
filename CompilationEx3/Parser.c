@@ -517,7 +517,7 @@ void parse_FUNC_DEFINITION()
 												// id but actuly i only sertch this to find line number
 												// becous in first all declertion i can to chang to NOT_USE
 												// becous here i still in definition
-			entry_of_function->size = num_of_PARAM_DEFINITIONS;
+			entry_of_function->size_arry_or_num_parameters = num_of_PARAM_DEFINITIONS;
 		}
 		
 		match(TOKEN_SEP_R_ROUND_BRACKET);
@@ -864,7 +864,7 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 		//semantic 
 		if (entry_of_id != NULL) 
 		{
-			int size_of_id = entry_of_id->size;
+			int size_of_id = entry_of_id->size_arry_or_num_parameters;
 
 			//semantic
 			if (entry_of_id->kind == function)
@@ -915,9 +915,9 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 		//semantic
 		if (entry_of_id != NULL)
 		{
-			if (entry_of_id->size != num_of_PARAMETERS_LIST)
+			if (entry_of_id->size_arry_or_num_parameters != num_of_PARAMETERS_LIST)
 			{
-				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size, num_of_PARAMETERS_LIST);
+				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size_arry_or_num_parameters, num_of_PARAMETERS_LIST);
 			}
 		}
 
@@ -1101,7 +1101,7 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 		//semantic 
 		if (entry_of_id != NULL)
 		{
-			int size_of_id = entry_of_id->size;
+			int size_of_id = entry_of_id->size_arry_or_num_parameters;
 
 			//semantic 
 			if (entry_of_id->kind == function)
@@ -1167,7 +1167,7 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 			}
 			else
 			{
-				if (entry_of_id->size == -1)
+				if (entry_of_id->size_arry_or_num_parameters == -1)
 				{
 					return entry_of_id->type;
 				}

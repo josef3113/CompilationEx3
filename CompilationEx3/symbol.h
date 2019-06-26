@@ -13,7 +13,7 @@ enum use {NOT_USED,USED};
 typedef struct symbol {
 	const char *id;
 	enum type type;
-	int size; // size or num parameters
+	int size_arry_or_num_parameters; // size or num parameters
 	enum kind kind;
 	enum use used;
 	int num_line_decler;
