@@ -12,7 +12,6 @@ void parse_PROGRAM()
 	symbolTable = (struct symbolTable*)malloc(sizeof(struct symbolTable));
 	symbolTable->symbolListHead = NULL;
 	symbolTable->parentSymbolTable = NULL;
-	symbolTable->childSymbolTableListHead = NULL;
 
 
 	Token * curr_token = next_token();
@@ -314,7 +313,7 @@ void parse_VARIABLE(enum action action,enum type type)
 
 		if (action == TO_USE)
 		{
-			symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+			Symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
 			if (entry_of_id == NULL)
 			{
 				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
@@ -324,10 +323,10 @@ void parse_VARIABLE(enum action action,enum type type)
 		else // want to define var with name curr_token->lexeme
 		{
 			// semantic                          
-			inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, variable, curr_token->lineNumber);
+			inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, VARIABLE, curr_token->lineNumber);
 			if (!inserted)
 			{
-				symbol* entry_of_variable = symbolTable_getSymbol(symbolTable, curr_token->lexeme);  // find this in current table
+				Symbol* entry_of_variable = find(symbolTable, curr_token->lexeme);  // find this in current table
 				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s alredy define at line: %d \n",
 						curr_token->lineNumber, curr_token->lexeme,entry_of_variable->num_line_decler);
 			}
@@ -496,10 +495,10 @@ void parse_FUNC_DEFINITION()
 		match(TOKEN_SEP_L_ROUND_BRACKET);
 
 		//semantic
-		inserted = insert(symbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, -1 , function, curr_token ->lineNumber);
+		inserted = insert(symbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, -1 , FUNCTION, curr_token ->lineNumber);
 		if (!inserted)
 		{
-			symbol* entry_of_function = symbolTable_getSymbol(symbolTable, token_of_id->lexeme);
+			Symbol* entry_of_function = find(symbolTable, token_of_id->lexeme);
 			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define at line: %d \n",
 					token_of_id->lineNumber, token_of_id->lexeme, entry_of_function->num_line_decler);
 		}
@@ -512,7 +511,7 @@ void parse_FUNC_DEFINITION()
 		//semantic - update the real num of parameters of function
 		if (inserted)
 		{
-			symbol* entry_of_function = lookup(symbolTable, token_of_id->lexeme);
+			Symbol* entry_of_function = lookup(symbolTable, token_of_id->lexeme);
 			entry_of_function->used = NOT_USED; // when i do lookup the system change that i use with this
 												// id but actuly i only sertch this to find line number
 												// becous in first all declertion i can to chang to NOT_USE
@@ -756,7 +755,7 @@ Type parse_STATEMENT()
 		fprintf(outSyntactic, "Rule (STATEMENT -> id STATEMENT_t2 ) \n");
 
 		// semantic
-		symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+		Symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
 		if (entry_of_id == NULL)
 		{
 			fprintf(outSemantic, "ERROR at line: %d the variable / function with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
@@ -845,7 +844,7 @@ Type parse_STATEMENT_t()
 	}
 }
 
-void parse_STATEMENT_t2(symbol* entry_of_id)
+void parse_STATEMENT_t2(Symbol* entry_of_id)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -867,7 +866,7 @@ void parse_STATEMENT_t2(symbol* entry_of_id)
 			int size_of_id = entry_of_id->size_arry_or_num_parameters;
 
 			//semantic
-			if (entry_of_id->kind == function)
+			if (entry_of_id->kind == FUNCTION)
 			{
 				fprintf(outSemantic, "ERROR at line:%d - you try to do assignment to function \n", curr_token->lineNumber);
 			} 
@@ -1024,7 +1023,7 @@ Type parse_EXPRESSION()
 		fprintf(outSyntactic, "Rule (EXPRESSION -> id EXPRESSION_t ) \n");
 
 		//semantic
-		symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+		Symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
 		Type type_to_return;
 		if (entry_of_id == NULL)
 		{
@@ -1083,7 +1082,7 @@ Type parse_EXPRESSION()
 	}
 }
 
-Type parse_EXPRESSION_t(symbol* entry_of_id)
+Type parse_EXPRESSION_t(Symbol* entry_of_id)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -1104,7 +1103,7 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 			int size_of_id = entry_of_id->size_arry_or_num_parameters;
 
 			//semantic 
-			if (entry_of_id->kind == function)
+			if (entry_of_id->kind == FUNCTION)
 			{
 				fprintf(outSemantic, "ERROR at line:%d - you try to use function - in this grammer is ban \n", curr_token->lineNumber);
 				return ERROR;
@@ -1160,7 +1159,7 @@ Type parse_EXPRESSION_t(symbol* entry_of_id)
 		//semantic todo - need to check this id is not function
 		if (entry_of_id != NULL)
 		{
-			if (entry_of_id->kind == function)
+			if (entry_of_id->kind == FUNCTION)
 			{
 				fprintf(outSemantic, "ERROR at line:%d - you try to use function - in this grammer is ban \n", curr_token->lineNumber);
 				return ERROR;

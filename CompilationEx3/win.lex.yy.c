@@ -2,6 +2,9 @@
 #include "symbolList.h"
 #include "symbolTable.h"
 
+// to check memory leak
+#include <crtdbg.h>
+
 
 #line 1 "win.lex.yy.c"
 
@@ -1958,7 +1961,7 @@ int main(int argc, char *argv[])
 	yylex_destroy();
 	
 
-
+	_CrtDumpMemoryLeaks();
 
 	scanf("%d", &a);
 

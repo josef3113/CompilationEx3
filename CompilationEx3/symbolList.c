@@ -2,80 +2,51 @@
 #include <stdlib.h>
 #include <string.h>
 
-void printSymbolList(struct symbolListEntry *head) {
-	printf("SymbolList:\n");
-	if (head == NULL) {
-		printf("\tNo symbols\n");
-	}
-	while (head != NULL) {
-		printf("\t");
-		printSymbol(&(head->symbol));
-		head = head->nextEntry;
-	}
-}
 
-void symbolList_freeList(struct symbolListEntry *head) {
+void symbolList_freeList(struct symbolList *head) {
 	if (head == NULL) {
 		return;
 	}
-	struct symbolListEntry *next;
+	struct symbolList *next;
 	next = head->nextEntry;
 	while (head != NULL) {
 		//free(&(head->symbol));
 		next = head->nextEntry;
+		// semantic todo
+		//free(head->symbol.id);
 		free(head);
 		head = next;
 	}
 }
 
-static struct symbolListEntry* initializeEntry(struct symbol symbol) {
-	struct symbolListEntry *entry = (struct symbolListEntry*) malloc(sizeof(struct symbolListEntry));
+static struct symbolList* initializeEntry(struct symbol symbol) {
+	struct symbolList *entry = (struct symbolList*) malloc(sizeof(struct symbolList));
 	entry->symbol = symbol;
 	entry->nextEntry = NULL;
 	return entry;
 }
 
-struct symbolListEntry* symbolList_findEntry(struct symbolListEntry *head, const char *id) {
+struct symbolList* symbolList_findEntry(struct symbolList *head, char *id) {
 	while (head != NULL && symbolCheckId(head->symbol, id)) {
 		head = head->nextEntry;
 	}
 	return head;
 }
 
-struct symbol* symbolList_getSymbol(struct symbolListEntry *head, const char *id) {
-	struct symbolListEntry *entry = symbolList_findEntry(head, id);
+struct symbol* symbolList_getSymbol(struct symbolList *head, char *id) {
+	struct symbolList *entry = symbolList_findEntry(head, id);
 	if (entry == NULL) {
 		return NULL;
 	}
 	return &(entry->symbol);
 }
 
-struct symbolListEntry* symbolList_insertEntry(struct symbolListEntry *head, struct symbol symbol) {
+struct symbolList* symbolList_insertEntry(struct symbolList *head, struct symbol symbol) {
 	if (symbolList_findEntry(head, symbol.id) != NULL) 
 	{
 		return head;
 	}
-	struct symbolListEntry *headTemp = initializeEntry(symbol);
+	struct symbolList *headTemp = initializeEntry(symbol);
 	headTemp->nextEntry = head;
 	return headTemp;
-}
-
-struct symbolListEntry* symbolList_deleteEntry(struct symbolListEntry *head, const char *id) {
-	if (head == NULL) {
-		return NULL;
-	}
-	if (!symbolCheckId(head->symbol, id)) {
-		return head->nextEntry;
-	}
-	struct symbolListEntry *current = head;
-	struct symbolListEntry *previous = NULL;
-	while (current != NULL && symbolCheckId(current->symbol, id)) {
-		previous = current;
-		current = current->nextEntry;
-	}
-	if (current != NULL) {
-		previous->nextEntry = current->nextEntry;
-		free(current);
-	}
-	return head;
 }

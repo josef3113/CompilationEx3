@@ -3,16 +3,14 @@
 
 #include "symbol.h"
 
-struct symbolListEntry {
+struct symbolList {
 	struct symbol symbol;
-	struct symbolListEntry *nextEntry;
+	struct symbolList *nextEntry;
 };
 
-void printSymbolList(struct symbolListEntry *head);
-void symbolList_freeList(struct symbolListEntry *head);
-struct symbolListEntry* symbolList_findEntry(struct symbolListEntry *head, const char *id);
-struct symbol* symbolList_getSymbol(struct symbolListEntry *head, const char *id);
-struct symbolListEntry* symbolList_insertEntry(struct symbolListEntry *head, struct symbol symbol);
-struct symbolListEntry* symbolList_deleteEntry(struct symbolListEntry *head, const char *id);
+void symbolList_freeList(struct symbolList *head);
+struct symbolList* symbolList_findEntry(struct symbolList *head, char *id);
+struct symbol* symbolList_getSymbol(struct symbolList *head, char *id);
+struct symbolList* symbolList_insertEntry(struct symbolList *head, struct symbol symbol);
 
 #endif

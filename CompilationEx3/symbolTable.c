@@ -1,87 +1,36 @@
 #include "symbolTable.h"
 #include <stdlib.h>
 
-struct symbolTableListEntry* symbolTableListEntry_initializeEntry() {
-	struct symbolTableListEntry *symbolTableListEntry = (struct symbolTableListEntry*) malloc(sizeof(struct symbolTableListEntry));
-	symbolTableListEntry->entry = (struct symbolTable*) malloc(sizeof(struct symbolTable));
-	symbolTableListEntry->nextEntry = NULL;
-	return symbolTableListEntry;
-}
-
-struct symbolTableListEntry* symbolTableList_insertEntry(struct symbolTableListEntry *head) {
-	struct symbolTableListEntry *headTemp = symbolTableListEntry_initializeEntry();
-	headTemp->nextEntry = head;
-	return headTemp;
-}
-
-struct symbolTableListEntry* symbolTableList_deleteEntry(struct symbolTableListEntry *head, struct symbolTable *symbolTable) {
-	if (head == NULL) {
-		return NULL;
-	}
-	if (head->entry == symbolTable) {
-		return head->nextEntry;
-	}
-	struct symbolTableListEntry *current = head;
-	struct symbolTableListEntry *previous = NULL;
-	while (current != NULL && current->entry != symbolTable) {
-		previous = current;
-		current = current->nextEntry;
-	}
-	if (current != NULL) {
-		previous->nextEntry = current->nextEntry;
-		free(current->entry);
-		free(current);
-	}
-	return head;
-}
-
-void symbolTableList_freeList(struct symbolTableListEntry *head) {
-	if (head == NULL) {
-		return;
-	}
-	struct symbolTableListEntry *next;
-	next = head->nextEntry;
-	while (head != NULL) {
-		free(head->entry);
-		next = head->nextEntry;
-		free(head);
-		head = next;
-	}
-}
 
 struct symbolTable* symbolTable_getParent(struct symbolTable* symbolTable) {
 	return symbolTable->parentSymbolTable;
 }
 
 struct symbolTable* symbolTable_addChild(struct symbolTable* symbolTable) {
-	struct symbolTableListEntry *childSymbolTableListEntry;
-	childSymbolTableListEntry = symbolTableListEntry_initializeEntry();
-	symbolTable->childSymbolTableListHead = symbolTableList_insertEntry(childSymbolTableListEntry);
-	struct symbolTable *childSymbolTable = (struct symbolTable*)childSymbolTableListEntry->entry;
+	struct symbolTable *childSymbolTable = (struct symbolTable*)malloc(sizeof(struct symbolTable));
 	childSymbolTable->parentSymbolTable = symbolTable;
 	childSymbolTable->symbolListHead = NULL;
 	return childSymbolTable;
 }
 
+// check this function
 struct symbolTable* symbolTable_deleteChild(struct symbolTable* symbolTable) {
-	//printf("symbolTable_deleteChild()\n");
+
 	struct symbolTable *parentSymbolTable = symbolTable_getParent(symbolTable);
-	if (parentSymbolTable != NULL) {
-		symbolTableList_deleteEntry(parentSymbolTable->childSymbolTableListHead, symbolTable);
-	}
-	//printf("symbolTableList_freeList()\n");
-	symbolTableList_freeList(symbolTable->childSymbolTableListHead);
-	//printf("symbolList_freeList()\n");
+
+	// free the symbol list
 	symbolList_freeList(symbolTable->symbolListHead);
+	free(symbolTable);
+
 	return parentSymbolTable;
 }
 
-struct symbol* symbolTable_getSymbol(struct symbolTable *symbolTable, const char *id) {
+struct symbol* find(struct symbolTable *symbolTable, char *id) {
 	return symbolList_getSymbol(symbolTable->symbolListHead, id);
 }
 
 int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol) {
-	struct symbolListEntry* head_old = symbolTable->symbolListHead;
+	struct symbolList* head_old = symbolTable->symbolListHead;
 	symbolTable->symbolListHead = symbolList_insertEntry(symbolTable->symbolListHead, symbol);
 
 	if (head_old == symbolTable->symbolListHead)
@@ -91,25 +40,23 @@ int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symb
 	return 1;
 }
 
-void symbolTable_deleteSymbol(struct symbolTable *symbolTable, const char *id) {
-	symbolTable->symbolListHead = symbolList_deleteEntry(symbolTable->symbolListHead, id);
-}
 
-int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind,int num_line) {
+
+int insert(struct symbolTable *symbolTable, char *id, enum type type,int size, enum kind kind,int num_line) {
 	struct symbol symbol;
 	initializeSymbol(&symbol, id, type,size, kind,num_line);
 	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
-struct symbol* lookup(struct symbolTable *symbolTable, const char *id) {
+struct symbol* lookup(struct symbolTable *symbolTable, char *id) {
 	struct symbolTable *symbolTableIter = symbolTable;
-	struct symbol *symbol = symbolTable_getSymbol(symbolTableIter, id);
+	struct symbol *symbol = find(symbolTableIter, id);
 	while (symbol == NULL) {
 		symbolTableIter = symbolTable_getParent(symbolTableIter);
 		if (symbolTableIter == NULL) {
 			break;
 		}
-		symbol = symbolTable_getSymbol(symbolTableIter, id);
+		symbol = find(symbolTableIter, id);
 	}
 	if (symbol != NULL)
 	{
@@ -124,8 +71,8 @@ struct symbolTable* enter_scope(struct symbolTable* symbolTable) {
 
 struct symbolTable* exit_scope(struct symbolTable* symbolTable) {
 
-	//semantic
-	struct symbolListEntry* head = symbolTable->symbolListHead;
+	//semantic - check if exsist id that not used print warning
+	struct symbolList* head = symbolTable->symbolListHead;
 	while (head != NULL)
 	{
 		if (head->symbol.used == NOT_USED)
@@ -136,5 +83,5 @@ struct symbolTable* exit_scope(struct symbolTable* symbolTable) {
 	}
 
 
-	return symbolTable_getParent(symbolTable);
+	return symbolTable_deleteChild(symbolTable);
 }

@@ -3,32 +3,19 @@
 
 #include "symbolList.h"
 
-struct symbolTableListEntry {
-	void *entry;
-	struct symbolTableListEntry *nextEntry;
-};
-
 struct symbolTable {
-	struct symbolListEntry *symbolListHead;
+	struct symbolList *symbolListHead;
 	struct symbolTable *parentSymbolTable;
-	struct symbolTableListEntry *childSymbolTableListHead;
 };
-
-struct symbolTableListEntry* symbolTableListEntry_initializeEntry();
-struct symbolTableListEntry* symbolTableList_insertEntry(struct symbolTableListEntry *head);
-struct symbolTableListEntry* symbolTableList_deleteEntry(struct symbolTableListEntry *head, struct symbolTable *symbolTable);
-void symbolTableList_freeList(struct symbolTableListEntry *head);
 
 struct symbolTable* symbolTable_getParent(struct symbolTable* symbolTable);
 struct symbolTable* symbolTable_addChild(struct symbolTable* symbolTable);
 struct symbolTable* symbolTable_deleteChild(struct symbolTable* symbolTable);
-
-struct symbol* symbolTable_getSymbol(struct symbolTable *symbolTable, const char *id);
 int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol);
-void symbolTable_deleteSymbol(struct symbolTable *symbolTable, const char *id);
 
-int insert(struct symbolTable *symbolTable, const char *id, enum type type,int size, enum kind kind, int num_line);
-struct symbol* lookup(struct symbolTable *symbolTable, const char *id);
+int insert(struct symbolTable *symbolTable, char *id, enum type type,int size, enum kind kind, int num_line);
+struct symbol* lookup(struct symbolTable *symbolTable, char *id);
+struct symbol* find(struct symbolTable *symbolTable, char *id);
 
 struct symbolTable* enter_scope(struct symbolTable* symbolTable);
 struct symbolTable* exit_scope(struct symbolTable* symbolTable);
