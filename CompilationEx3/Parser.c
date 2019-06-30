@@ -945,13 +945,13 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 			if (entry_of_id->size_arry_or_num_parameters != num_of_PARAMETERS_LIST)
 			{
 				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size_arry_or_num_parameters, num_of_PARAMETERS_LIST);
-				//struct symbolList * temp = entry_of_id->list_of_parameters;
-				//printf("function: %s \n", entry_of_id->id);
-				//while (temp != NULL)
-				//{
-				//	printf("parameter : id: %s type: %d \n", temp->symbol.id, temp->symbol.type);
-				//	temp = temp->nextEntry;
-				//}
+			/*	struct symbolList * temp = entry_of_id->list_of_parameters;
+				printf("function: %s \n", entry_of_id->id);
+				while (temp != NULL)
+				{
+					printf("parameter : id: %s type: %d \n", temp->symbol.id, temp->symbol.type);
+					temp = temp->nextEntry;
+				}*/
 			}
 			
 		}
