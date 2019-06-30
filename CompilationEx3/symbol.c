@@ -11,6 +11,7 @@ void initializeSymbol(struct symbol *symbol, char *id, enum type type,int size, 
 	symbol->kind = kind;
 	symbol->num_line_decler = num_of_line;
 	symbol->used = NOT_USED;
+	symbol->list_of_parameters = NULL;
 }
 
 

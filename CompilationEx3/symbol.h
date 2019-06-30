@@ -6,7 +6,7 @@
 
 typedef enum type { VOID, INTEGER, REAL, EMPTY, ERROR}Type;
 typedef enum action { TO_USE, TO_DEFINE}Action;
-typedef enum kind { VARIABLE, FUNCTION }Kind;
+typedef enum kind { VARIABLE, FUNCTION, ARRAY }Kind;
 typedef enum use { NOT_USED, USED}Use;
 
 typedef struct symbol {
@@ -16,6 +16,7 @@ typedef struct symbol {
 	enum kind kind;
 	enum use used;
 	int num_line_decler;
+	struct symbolList* list_of_parameters;
 }Symbol;
 
 void initializeSymbol(struct symbol *symbol, char *id, enum type type,int size, enum kind kind,int num_of_line );
