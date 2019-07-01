@@ -2,21 +2,21 @@
 #include <stdlib.h>
 
 
-struct symbolTable* symbolTable_getParent(struct symbolTable* symbolTable) {
+SymbolTable * symbolTable_getParent(struct symbolTable * symbolTable) {
 	return symbolTable->parentSymbolTable;
 }
 
-struct symbolTable* symbolTable_addChild(struct symbolTable* symbolTable) {
-	struct symbolTable *childSymbolTable = (struct symbolTable*)malloc(sizeof(struct symbolTable));
+SymbolTable * symbolTable_addChild(struct symbolTable * symbolTable) {
+	SymbolTable  *childSymbolTable = (SymbolTable *)malloc(sizeof(SymbolTable ));
 	childSymbolTable->parentSymbolTable = symbolTable;
 	childSymbolTable->symbolListHead = NULL;
 	return childSymbolTable;
 }
 
 // check this function
-struct symbolTable* symbolTable_deleteChild(struct symbolTable* symbolTable) {
+SymbolTable * symbolTable_deleteChild(struct symbolTable * symbolTable) {
 
-	struct symbolTable *parentSymbolTable = symbolTable_getParent(symbolTable);
+	SymbolTable  *parentSymbolTable = symbolTable_getParent(symbolTable);
 
 	// free the symbol list
 	symbolList_freeList(symbolTable->symbolListHead);
@@ -25,11 +25,11 @@ struct symbolTable* symbolTable_deleteChild(struct symbolTable* symbolTable) {
 	return parentSymbolTable;
 }
 
-struct symbol* lookup(struct symbolTable *symbolTable, char *id) {
+Symbol* lookup(struct symbolTable  *symbolTable, char *id) {
 	return symbolList_getSymbol(symbolTable->symbolListHead, id);
 }
 
-int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol) {
+int symbolTable_insertSymbol(struct symbolTable  *symbolTable, Symbol symbol) {
 	struct symbolList* head_old = symbolTable->symbolListHead;
 	symbolTable->symbolListHead = symbolList_insertEntry(symbolTable->symbolListHead, symbol);
 
@@ -42,24 +42,24 @@ int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symb
 
 
 
-int insert(struct symbolTable *symbolTable, char *id, enum type type,int size, enum kind kind,int num_line) {
-	struct symbol symbol;
+int insert(struct symbolTable  *symbolTable, char *id, Type type,int size, Kind kind,int num_line) {
+	Symbol symbol;
 	initializeSymbol(&symbol, id, type,size, kind,num_line);
 	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
-int insert_Function(struct symbolTable *symbolTable, char *id, enum type type, int size, enum kind kind, int num_line, struct symbolList* list_param)
+int insert_Function(struct symbolTable  *symbolTable, char *id, Type type, int size, Kind kind, int num_line, struct symbolList* list_param)
 {
-	struct symbol symbol;
+	Symbol symbol;
 	initializeSymbol(&symbol, id, type, size, kind, num_line);
 	symbol.list_of_parameters = list_param;
 	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
 
-struct symbol* find(struct symbolTable *symbolTable, char *id) {
-	struct symbolTable *symbolTableIter = symbolTable;
-	struct symbol *symbol = lookup(symbolTableIter, id);
+Symbol* find(struct symbolTable  *symbolTable, char *id) {
+	SymbolTable  *symbolTableIter = symbolTable;
+	Symbol *symbol = lookup(symbolTableIter, id);
 	while (symbol == NULL) {
 		symbolTableIter = symbolTable_getParent(symbolTableIter);
 		if (symbolTableIter == NULL) {
@@ -74,11 +74,11 @@ struct symbol* find(struct symbolTable *symbolTable, char *id) {
 	return symbol;
 }
 
-struct symbolTable* make_table(struct symbolTable* symbolTable) {
+SymbolTable * make_table(struct symbolTable * symbolTable) {
 	return symbolTable_addChild(symbolTable);
 }
 
-struct symbolTable* pop_table(struct symbolTable* symbolTable) {
+SymbolTable * pop_table(struct symbolTable * symbolTable) {
 
 	//semantic - check if exsist id that not used print warning
 	struct symbolList* head = symbolTable->symbolListHead;
@@ -96,11 +96,11 @@ struct symbolTable* pop_table(struct symbolTable* symbolTable) {
 }
 
 // not use at this function but this is task 
-enum type get_type(Symbol* entry)
+Type get_type(Symbol* entry)
 {
 	return entry->type;
 }
-void set_type(Symbol* entry, enum type type)
+void set_type(Symbol* entry, Type type)
 {
 	entry->type = type;
 }

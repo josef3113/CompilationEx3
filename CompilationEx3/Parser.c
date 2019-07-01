@@ -3,7 +3,7 @@
 #include "symbolList.h"
 #include "symbolTable.h"
 
-struct symbolTable *symbolTable;
+SymbolTable  *symbolTable;
 
 void parse_PROGRAM()
 {
@@ -157,7 +157,7 @@ int parse_VAR_DEFINITION()
 		fprintf(outSyntactic, "Rule (VAR_DEFINITION -> TYPE VARIABLES_LIST) \n");
 
 		back_token();
-		enum type type = parse_TYPE();
+		Type type = parse_TYPE();
 		return parse_VARIABLES_LIST(TO_DEFINE, type);
 	}break;
 
@@ -178,7 +178,7 @@ int parse_VAR_DEFINITION()
 	}
 }
 
-enum type parse_TYPE()
+Type parse_TYPE()
 {
 	Token* curr_token = next_token();
 	switch (curr_token->kind)
@@ -214,7 +214,7 @@ enum type parse_TYPE()
 	}
 }
 
-int parse_VARIABLES_LIST(enum action action,enum type type)
+int parse_VARIABLES_LIST(enum action action, enum type type)
 {
 	Token* curr_token = next_token();
 	switch (curr_token->kind)
@@ -249,7 +249,7 @@ int parse_VARIABLES_LIST(enum action action,enum type type)
 	}
 }
 
-int parse_VARIABLES_LIST_t(enum action action,enum type type)
+int parse_VARIABLES_LIST_t(enum action action, enum type type)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -294,7 +294,7 @@ int parse_VARIABLES_LIST_t(enum action action,enum type type)
 	}
 }
 
-void parse_VARIABLE(enum action action,enum type type)
+void parse_VARIABLE(enum action action, enum type type)
 {
 	Token*	curr_token = next_token();
 
@@ -509,7 +509,7 @@ void parse_FUNC_DEFINITION()
 		match(TOKEN_SEP_R_ROUND_BRACKET);
 
 
-		struct symbolList* list_of_parametrs = get_List_Parameters(symbolTable);// in this point exsist in table only param of this fanction
+		SymbolList* list_of_parametrs = get_List_Parameters(symbolTable);// in this point exsist in table only param of this fanction
 
 		//semantic                     // insert to global table
 		int inserted = insert_Function(symbolTable->parentSymbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, num_of_PARAM_DEFINITIONS, FUNCTION, curr_token->lineNumber,list_of_parametrs);
@@ -888,7 +888,7 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 			else if (entry_of_id->size_arry_or_num_parameters != num_of_PARAMETERS_LIST)
 			{
 				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size_arry_or_num_parameters, num_of_PARAMETERS_LIST);
-				struct symbolList * temp = entry_of_id->list_of_parameters;
+				SymbolList * temp = entry_of_id->list_of_parameters;
 				printf("function: %s \n", entry_of_id->id);
 				while (temp != NULL)
 				{
@@ -1127,7 +1127,7 @@ Type parse_EXPRESSION_t(struct symbol * entry_of_id)
 	}
 }
 
-enum Type check_Use(struct symbol* entry_of_id, int num_of_VARIABLE_t, Token* curr_token)
+Type check_Use(struct symbol* entry_of_id, int num_of_VARIABLE_t, Token* curr_token)
 {
 	if (entry_of_id != NULL)
 	{ 
@@ -1162,10 +1162,10 @@ enum Type check_Use(struct symbol* entry_of_id, int num_of_VARIABLE_t, Token* cu
 	}
 }
 
-struct symbolList* get_List_Parameters(struct symbolTable * symbolTable)
+SymbolList* get_List_Parameters(struct symbolTable  * symbolTable)
 {
-	struct symbolList* list_of_parametrs = NULL;
-	struct symbolList* temp = symbolTable->symbolListHead;
+	SymbolList* list_of_parametrs = NULL;
+	SymbolList* temp = symbolTable->symbolListHead;
 	while (temp != NULL)
 	{
 		list_of_parametrs = symbolList_insertEntry(list_of_parametrs, temp->symbol);

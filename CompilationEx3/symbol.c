@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-void initializeSymbol(struct symbol *symbol, char *id, enum type type,int size, enum kind kind,int num_of_line)
+void initializeSymbol(Symbol *symbol, char *id, Type type,int size, Kind kind,int num_of_line)
 {
 	symbol->id = id;
 	symbol->type = type;
@@ -15,7 +15,7 @@ void initializeSymbol(struct symbol *symbol, char *id, enum type type,int size, 
 }
 
 
-int symbolCheckId(struct symbol symbol, char *id) {
+int symbolCheckId(Symbol symbol, char *id) {
 	if (strcmp(symbol.id, id) == 0) {
 		return 0;
 	}

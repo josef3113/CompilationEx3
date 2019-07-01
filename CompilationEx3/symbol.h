@@ -11,15 +11,16 @@ typedef enum use { NOT_USED, USED}Use;
 
 typedef struct symbol {
 	char* id;
-	enum type type;
+	Type type;
 	int size_arry_or_num_parameters;
-	enum kind kind;
-	enum use used;
+	Kind kind;
+	Use used;
 	int num_line_decler;
 	struct symbolList* list_of_parameters;
 }Symbol;
 
-void initializeSymbol(struct symbol *symbol, char *id, enum type type,int size, enum kind kind,int num_of_line );
-int symbolCheckId(struct symbol symbol, char *id);
+
+void initializeSymbol(Symbol *symbol, char *id, Type type,int size, Kind kind,int num_of_line );
+int symbolCheckId(Symbol symbol, char *id);
 
 #endif

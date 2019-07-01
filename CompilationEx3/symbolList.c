@@ -7,7 +7,7 @@ void symbolList_freeList(struct symbolList *head) {
 	if (head == NULL) {
 		return;
 	}
-	struct symbolList *next;
+	SymbolList *next;
 	next = head->nextEntry;
 	while (head != NULL) {
 		//free(&(head->symbol));
@@ -22,14 +22,14 @@ void symbolList_freeList(struct symbolList *head) {
 	}
 }
 
-static struct symbolList* initializeEntry(struct symbol symbol) {
-	struct symbolList *entry = (struct symbolList*) malloc(sizeof(struct symbolList));
+SymbolList* initializeEntry(Symbol symbol) {
+	SymbolList *entry = (SymbolList*) malloc(sizeof(SymbolList));
 	entry->symbol = symbol;
 	entry->nextEntry = NULL;
 	return entry;
 }
 
-struct symbolList* symbolList_findEntry(struct symbolList *head, char *id) {
+SymbolList* symbolList_findEntry(struct symbolList *head, char *id) {
 	while (head != NULL && symbolCheckId(head->symbol, id)) {
 		head = head->nextEntry;
 	}
@@ -37,19 +37,19 @@ struct symbolList* symbolList_findEntry(struct symbolList *head, char *id) {
 }
 
 struct symbol* symbolList_getSymbol(struct symbolList *head, char *id) {
-	struct symbolList *entry = symbolList_findEntry(head, id);
+	SymbolList *entry = symbolList_findEntry(head, id);
 	if (entry == NULL) {
 		return NULL;
 	}
 	return &(entry->symbol);
 }
 
-struct symbolList* symbolList_insertEntry(struct symbolList *head, struct symbol symbol) {
+SymbolList* symbolList_insertEntry(struct symbolList *head, Symbol symbol) {
 	if (symbolList_findEntry(head, symbol.id) != NULL) 
 	{
 		return head;
 	}
-	struct symbolList *headTemp = initializeEntry(symbol);
+	SymbolList *headTemp = initializeEntry(symbol);
 	headTemp->nextEntry = head;
 	return headTemp;
 }
