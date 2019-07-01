@@ -15,10 +15,11 @@ int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symb
 
 int insert(struct symbolTable *symbolTable, char *id, enum type type,int size, enum kind kind, int num_line);
 int insert_Function(struct symbolTable *symbolTable, char *id, enum type type, int size, enum kind kind, int num_line, struct symbolList* list_param);
-struct symbol* lookup(struct symbolTable *symbolTable, char *id);
 struct symbol* find(struct symbolTable *symbolTable, char *id);
+struct symbol* lookup(struct symbolTable *symbolTable, char *id);
 
-struct symbolTable* enter_scope(struct symbolTable* symbolTable);
-struct symbolTable* exit_scope(struct symbolTable* symbolTable);
-
+struct symbolTable* make_table(struct symbolTable* symbolTable);
+struct symbolTable* pop_table(struct symbolTable* symbolTable);
+enum type get_type(Symbol* entry);
+void set_type(Symbol* entry, enum type type);
 #endif

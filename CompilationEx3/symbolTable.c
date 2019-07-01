@@ -25,7 +25,7 @@ struct symbolTable* symbolTable_deleteChild(struct symbolTable* symbolTable) {
 	return parentSymbolTable;
 }
 
-struct symbol* find(struct symbolTable *symbolTable, char *id) {
+struct symbol* lookup(struct symbolTable *symbolTable, char *id) {
 	return symbolList_getSymbol(symbolTable->symbolListHead, id);
 }
 
@@ -57,15 +57,15 @@ int insert_Function(struct symbolTable *symbolTable, char *id, enum type type, i
 }
 
 
-struct symbol* lookup(struct symbolTable *symbolTable, char *id) {
+struct symbol* find(struct symbolTable *symbolTable, char *id) {
 	struct symbolTable *symbolTableIter = symbolTable;
-	struct symbol *symbol = find(symbolTableIter, id);
+	struct symbol *symbol = lookup(symbolTableIter, id);
 	while (symbol == NULL) {
 		symbolTableIter = symbolTable_getParent(symbolTableIter);
 		if (symbolTableIter == NULL) {
 			break;
 		}
-		symbol = find(symbolTableIter, id);
+		symbol = lookup(symbolTableIter, id);
 	}
 	if (symbol != NULL)
 	{
@@ -74,11 +74,11 @@ struct symbol* lookup(struct symbolTable *symbolTable, char *id) {
 	return symbol;
 }
 
-struct symbolTable* enter_scope(struct symbolTable* symbolTable) {
+struct symbolTable* make_table(struct symbolTable* symbolTable) {
 	return symbolTable_addChild(symbolTable);
 }
 
-struct symbolTable* exit_scope(struct symbolTable* symbolTable) {
+struct symbolTable* pop_table(struct symbolTable* symbolTable) {
 
 	//semantic - check if exsist id that not used print warning
 	struct symbolList* head = symbolTable->symbolListHead;
@@ -93,4 +93,14 @@ struct symbolTable* exit_scope(struct symbolTable* symbolTable) {
 
 
 	return symbolTable_deleteChild(symbolTable);
+}
+
+// not use at this function but this is task 
+enum type get_type(Symbol* entry)
+{
+	return entry->type;
+}
+void set_type(Symbol* entry, enum type type)
+{
+	entry->type = type;
 }

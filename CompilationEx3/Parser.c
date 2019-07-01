@@ -9,10 +9,8 @@ void parse_PROGRAM()
 {
 	// semantic 
 	// global table - contain scoop main and function
-	symbolTable = (struct symbolTable*)malloc(sizeof(struct symbolTable));
-	symbolTable->symbolListHead = NULL;
-	symbolTable->parentSymbolTable = NULL;
-
+	symbolTable = NULL;
+	symbolTable = make_table(symbolTable);
 
 	Token * curr_token = next_token();
 	// first program
@@ -22,7 +20,7 @@ void parse_PROGRAM()
 	{
 		//semantic 
 		// main scoop insert 
-		symbolTable = enter_scope(symbolTable);
+		symbolTable = make_table(symbolTable);
 
 		fprintf(outSyntactic, "Rule (PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS) \n");
 		parse_VAR_DEFINITIONS();
@@ -32,13 +30,13 @@ void parse_PROGRAM()
 
 		//semantic 
 		// main scoop exit
-		symbolTable = exit_scope(symbolTable);
+		symbolTable = pop_table(symbolTable);
 
 
 		parse_FUNC_DEFINITIONS();
 
 		// go out from global table
-		exit_scope(symbolTable);
+		pop_table(symbolTable);
 
 	}break;
 
@@ -318,7 +316,7 @@ void parse_VARIABLE(enum action action,enum type type)
 
 		if (action == TO_USE)
 		{
-			Symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+			Symbol* entry_of_id = find(symbolTable, curr_token->lexeme);
 			if (entry_of_id == NULL)
 			{
 				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
@@ -344,7 +342,7 @@ void parse_VARIABLE(enum action action,enum type type)
 
 			if (!inserted)
 			{
-				Symbol* entry_of_variable = find(symbolTable, curr_token->lexeme);  // find this in current table
+				Symbol* entry_of_variable = lookup(symbolTable, curr_token->lexeme);  // find this in current table
 				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s alredy define at line: %d \n",
 						curr_token->lineNumber, curr_token->lexeme,entry_of_variable->num_line_decler);
 			}
@@ -505,7 +503,7 @@ void parse_FUNC_DEFINITION()
 		match(TOKEN_SEP_L_ROUND_BRACKET);
 
 		// semantic - do this here becous i want the names of parametrs will be in list symbol of this function
-		symbolTable = enter_scope(symbolTable);
+		symbolTable = make_table(symbolTable);
 
 		int num_of_PARAM_DEFINITIONS = parse_PARAM_DEFINITIONS();
 		match(TOKEN_SEP_R_ROUND_BRACKET);
@@ -513,11 +511,11 @@ void parse_FUNC_DEFINITION()
 
 		struct symbolList* list_of_parametrs = get_List_Parameters(symbolTable);// in this point exsist in table only param of this fanction
 
-		//semantic        // insert to global table
+		//semantic                     // insert to global table
 		int inserted = insert_Function(symbolTable->parentSymbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, num_of_PARAM_DEFINITIONS, FUNCTION, curr_token->lineNumber,list_of_parametrs);
 		if (!inserted)
 		{
-			Symbol* entry_of_function = find(symbolTable->parentSymbolTable, token_of_id->lexeme);
+			Symbol* entry_of_function = lookup(symbolTable->parentSymbolTable, token_of_id->lexeme);
 			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define at line: %d \n",
 				token_of_id->lineNumber, token_of_id->lexeme, entry_of_function->num_line_decler);
 		}
@@ -525,7 +523,7 @@ void parse_FUNC_DEFINITION()
 		Type type_of_BLOCK = parse_BLOCK();
 
 		//semantic
-		symbolTable = exit_scope(symbolTable);
+		symbolTable = pop_table(symbolTable);
 
 		if (type_of_RETURNED_TYPE == VOID)
 		{
@@ -756,7 +754,7 @@ Type parse_STATEMENT()
 		fprintf(outSyntactic, "Rule (STATEMENT -> id STATEMENT_t2 ) \n");
 
 		// semantic
-		Symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+		Symbol* entry_of_id = find(symbolTable, curr_token->lexeme);
 		if (entry_of_id == NULL)
 		{
 			fprintf(outSemantic, "ERROR at line: %d the variable / function with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
@@ -774,12 +772,12 @@ Type parse_STATEMENT()
 		back_token();
 
 		// semantic 
-		symbolTable = enter_scope(symbolTable);
+		symbolTable = make_table(symbolTable);
 
 		parse_BLOCK();
 
 		// semantic 
-		symbolTable = exit_scope(symbolTable);
+		symbolTable = pop_table(symbolTable);
 
 		// semantic
 		return EMPTY;
@@ -1003,7 +1001,7 @@ Type parse_EXPRESSION()
 		fprintf(outSyntactic, "Rule (EXPRESSION -> id EXPRESSION_t ) \n");
 
 		//semantic
-		Symbol* entry_of_id = lookup(symbolTable, curr_token->lexeme);
+		Symbol* entry_of_id = find(symbolTable, curr_token->lexeme);
 		Type type_to_return;
 		if (entry_of_id == NULL)
 		{
