@@ -27,3 +27,6 @@ enum Type parse_BLOCK();
 int parse_PARAMETERS_LIST();
 enum Type parse_EXPRESSION();
 enum Type parse_EXPRESSION_t(struct symbol*); // is F'
+
+// semantic
+enum Type check_Use(struct symbol * , int, Token*);

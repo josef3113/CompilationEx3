@@ -299,17 +299,20 @@ int parse_VARIABLES_LIST_t(enum action action,enum type type)
 void parse_VARIABLE(enum action action,enum type type)
 {
 	Token*	curr_token = next_token();
-	
-	//semantic
-	int size_of_var;
-	int inserted;
+
 
 	switch (curr_token->kind)
 	{
 	case TOKEN_ID:
 	{
+
+		//semantic
+		int size_of_VARIABLE_t;
+		int inserted;
+
+
 		fprintf(outSyntactic, "Rule (VARIABLE -> id VARIABLE_t) \n");
-		size_of_var = parse_VARIABLE_t();
+		size_of_VARIABLE_t = parse_VARIABLE_t();
 
 
 
@@ -322,41 +325,23 @@ void parse_VARIABLE(enum action action,enum type type)
 			}
 			else
 			{
-				if (entry_of_id->kind == FUNCTION)
-				{
-					fprintf(outSemantic, "ERROR at line:%d - you try to use function name like val \n", curr_token->lineNumber);
-				}
-				else if (entry_of_id->kind == ARRAY && size_of_var == -1)
-				{
-					// role-7 and 5
-					fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
-					//return ERROR;
-				}
-				else if (entry_of_id->kind == VARIABLE && size_of_var != -1)
-				{
-					// role-8
-					fprintf(outSemantic, "ERROR at line:%d - you try use val like array \n", curr_token->lineNumber);
-				}
-				else if (entry_of_id->kind == ARRAY && size_of_var > entry_of_id->size_arry_or_num_parameters)
-				{
-					// role-9
-					fprintf(outSemantic, "ERROR at line:%d - out of bound array \n", curr_token->lineNumber);
-				}
-
+				check_Use(entry_of_id, size_of_VARIABLE_t, curr_token);
 			}
 		}
 
 		else // want to define var with name curr_token->lexeme
 		{
 			// semantic  
-			if (size_of_var == -1)
+			if (size_of_VARIABLE_t == -1)
 			{
-				inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, VARIABLE, curr_token->lineNumber);
+				inserted = insert(symbolTable, curr_token->lexeme, type, size_of_VARIABLE_t, VARIABLE, curr_token->lineNumber);
 			}
 			else // its array 
 			{
-				inserted = insert(symbolTable, curr_token->lexeme, type, size_of_var, ARRAY, curr_token->lineNumber);
+				inserted = insert(symbolTable, curr_token->lexeme, type, size_of_VARIABLE_t, ARRAY, curr_token->lineNumber);
 			}
+
+
 			if (!inserted)
 			{
 				Symbol* entry_of_variable = find(symbolTable, curr_token->lexeme);  // find this in current table
@@ -364,7 +349,6 @@ void parse_VARIABLE(enum action action,enum type type)
 						curr_token->lineNumber, curr_token->lexeme,entry_of_variable->num_line_decler);
 			}
 		}
-		//printf("lexme:%s type:%d  size:%d \n", curr_token->lexeme, type,size_of_var);
 
 	}break;
 	default:
@@ -384,7 +368,6 @@ void parse_VARIABLE(enum action action,enum type type)
 int parse_VARIABLE_t()
 {
 	Token*	curr_token = next_token();
-	Token*  token_for_size = NULL;
 
 	switch (curr_token->kind)
 	{
@@ -393,7 +376,7 @@ int parse_VARIABLE_t()
 		fprintf(outSyntactic, "Rule (VARIABLE_t -> [int_number] ) \n");
 
 		//semantic
-		token_for_size = next_token();
+		Token*  token_for_size = next_token();
 		back_token(); // peak for save token of int_number
 
 		match(TOKEN_INT_NUBMER);
@@ -557,17 +540,12 @@ void parse_FUNC_DEFINITION()
 
 
 
-		//semantic - update the real num of parameters of function
+		//semantic - update the real num of parameters and list of parametrs of function
 		if (inserted)
-		{
-			Symbol* entry_of_function = lookup(symbolTable, token_of_id->lexeme);
-			entry_of_function->used = NOT_USED; // when i do lookup the system change that i use with this
-												// id but actuly i only sertch this to find line number
-												// becous in first all declertion i can to chang to NOT_USE
-												// becous here i still in definition
+		{									// find in global table the entry of this function
+			Symbol* entry_of_function = find(symbolTable->parentSymbolTable, token_of_id->lexeme);
 			entry_of_function->size_arry_or_num_parameters = num_of_PARAM_DEFINITIONS;
 			entry_of_function->list_of_parameters = list_of_parametrs;
-
 		}
 		
 		match(TOKEN_SEP_R_ROUND_BRACKET);
@@ -906,46 +884,15 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 	{
 		fprintf(outSyntactic, "Rule (STATEMENT_t2 -> VARIABLE_t = EXPRESSION ) \n");
 
-		// semantic
-		int size_of_VARIABLE_t;
-
 		back_token();
-		size_of_VARIABLE_t = parse_VARIABLE_t();
-
-		//semantic 
-		if (entry_of_id != NULL) 
-		{
-			int size_of_id = entry_of_id->size_arry_or_num_parameters;
-
-			//semantic
-			if (entry_of_id->kind == FUNCTION)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you try to do assignment to function \n", curr_token->lineNumber);
-			} 
-			else if (entry_of_id->kind == ARRAY && size_of_VARIABLE_t == -1)
-			{
-				// role-7 and 5
-				fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
-				//return ERROR;
-			}
-			else if (entry_of_id->kind == VARIABLE && size_of_VARIABLE_t != -1)
-			{
-				// role-8
-				fprintf(outSemantic, "ERROR at line:%d - you try use val like array \n", curr_token->lineNumber);
-			}
-			else if (entry_of_id->kind == ARRAY && size_of_VARIABLE_t > size_of_id)
-			{
-				// role-9
-				fprintf(outSemantic, "ERROR at line:%d - out of bound array \n", curr_token->lineNumber);
-			}
-		}
-
-
+		int size_of_VARIABLE_t = parse_VARIABLE_t();
 		match(TOKEN_OP_ASSIGN);
 		Type type_of_EXPRESSION = parse_EXPRESSION();
 
 		//semantic
-		if (entry_of_id != NULL && type_of_EXPRESSION != ERROR)
+		check_Use(entry_of_id, size_of_VARIABLE_t, curr_token); // check that kind of id its OK
+
+		if (entry_of_id != NULL && type_of_EXPRESSION != ERROR)// check that types of id and expression OK
 		{
 			if (entry_of_id->type == INTEGER && type_of_EXPRESSION != INTEGER)
 			{
@@ -956,13 +903,10 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 
 	case TOKEN_SEP_L_ROUND_BRACKET:
 	{
-		// semantic
-		int num_of_PARAMETERS_LIST;
-
 		fprintf(outSyntactic, "Rule (STATEMENT_t2 -> ( PARAMETERS_LIST ) ) \n");
-		num_of_PARAMETERS_LIST = parse_PARAMETERS_LIST();
+		
+		int num_of_PARAMETERS_LIST = parse_PARAMETERS_LIST();
 		match(TOKEN_SEP_R_ROUND_BRACKET);
-
 
 
 		//semantic
@@ -1048,7 +992,7 @@ int parse_PARAMETERS_LIST()
 		fprintf(outSyntactic, "Rule (PARAMETERS_LIST -> VARIABLES_LIST ) \n");
 
 		back_token();
-		return parse_VARIABLES_LIST(TO_USE,VOID); // semantic need to change this !-!-!
+		return parse_VARIABLES_LIST(TO_USE,VOID);
 	}break;
 
 	case TOKEN_SEP_R_ROUND_BRACKET:
@@ -1156,50 +1100,12 @@ Type parse_EXPRESSION_t(struct symbol * entry_of_id)
 	{
 		fprintf(outSyntactic, "Rule (EXPRESSION_t -> VARIABLE_t ) \n");
 
-		//semantic
-		int size_of_VARIABLE_t;
-
 		back_token();
-		size_of_VARIABLE_t = parse_VARIABLE_t();
+		int size_of_VARIABLE_t = parse_VARIABLE_t();
 
 		//semantic 
-		if (entry_of_id != NULL)
-		{
-			int size_of_id = entry_of_id->size_arry_or_num_parameters;
-
-			//semantic 
-			if (entry_of_id->kind == FUNCTION)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you try to use function - in this grammer is ban \n", curr_token->lineNumber);
-				return ERROR;
-			}
-			else if (entry_of_id->kind == ARRAY && size_of_VARIABLE_t == -1)
-			{
-				// role-7 and 5
-				fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
-				return ERROR;
-			}
-			else if (entry_of_id->kind == VARIABLE && size_of_VARIABLE_t != -1)
-			{
-				// role-8
-				fprintf(outSemantic, "ERROR at line:%d - you try use val like array \n", curr_token->lineNumber);
-				return ERROR;
-			}
-			else if (entry_of_id->kind == ARRAY && size_of_VARIABLE_t > size_of_id)
-			{
-				// role-9
-				fprintf(outSemantic, "ERROR at line:%d - out of bound array \n", curr_token->lineNumber);
-				return ERROR;
-			}
-			else
-			{
-				return entry_of_id->type;
-			}
-		}
-		else
-		{
-			return ERROR;
-		}
+		return check_Use(entry_of_id, size_of_VARIABLE_t, curr_token);
+		
 		}break;
 
 
@@ -1207,17 +1113,8 @@ Type parse_EXPRESSION_t(struct symbol * entry_of_id)
 	{
 		fprintf(outSyntactic, "Rule (EXPRESSION_t -> *EXPRESSION ) \n");
 
-		if (entry_of_id != NULL)
-		{
-			if (entry_of_id->kind == ARRAY)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you use array like val -array element can only end of expression \n", curr_token->lineNumber);
-			}
-			else if (entry_of_id->kind == FUNCTION)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you use name function like val  \n", curr_token->lineNumber);
-			}
-		}
+		//semantic
+		check_Use(entry_of_id, -1, curr_token);
 
 
 		return parse_EXPRESSION();
@@ -1226,17 +1123,8 @@ Type parse_EXPRESSION_t(struct symbol * entry_of_id)
 	{
 		fprintf(outSyntactic, "Rule (EXPRESSION_t -> /EXPRESSION ) \n");
 
-		if (entry_of_id != NULL)
-		{
-			if (entry_of_id->kind == ARRAY)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you use array like val -array element can only end of expression \n", curr_token->lineNumber);
-			}
-			else if (entry_of_id->kind == FUNCTION)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you use name function like val  \n", curr_token->lineNumber);
-			}
-		}
+		//semantic
+		check_Use(entry_of_id, -1, curr_token);
 
 		return parse_EXPRESSION();
 	}break;
@@ -1246,31 +1134,9 @@ Type parse_EXPRESSION_t(struct symbol * entry_of_id)
 		fprintf(outSyntactic, "Rule (EXPRESSION_t -> EPSILON ) \n");
 
 		back_token();
-		//semantic todo - need to check this id is not function
-		if (entry_of_id != NULL)
-		{
-			if (entry_of_id->kind == FUNCTION)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you try to use function - in this grammer is ban \n", curr_token->lineNumber);
-				return ERROR;
-			}
-			else if (entry_of_id->kind == ARRAY)
-			{
-				fprintf(outSemantic, "ERROR at line:%d - you try use array like val \n", curr_token->lineNumber);
-				return ERROR;
-			}
-			else
-			{
-				return entry_of_id->type;
-
-			}
-
-			
-		}
-		else
-		{
-			return ERROR;
-		}
+		
+		//semantic
+		return check_Use(entry_of_id, -1, curr_token);
 		
 		
 	}break;
@@ -1289,5 +1155,40 @@ Type parse_EXPRESSION_t(struct symbol * entry_of_id)
 		//semantic todo
 		return ERROR;
 	}
+	}
+}
+
+enum Type check_Use(struct symbol* entry_of_id, int num_of_VARIABLE_t, Token* curr_token)
+{
+	if (entry_of_id != NULL)
+	{ 
+		if (entry_of_id->kind == FUNCTION)
+		{
+			fprintf(outSemantic, "ERROR at line:%d the ID: %s is function \n", curr_token->lineNumber,entry_of_id->id);
+			return ERROR;
+		}
+		else if (entry_of_id->kind == ARRAY && num_of_VARIABLE_t == -1)
+		{
+			fprintf(outSemantic, "ERROR at line:%d the ID: %s is array not val \n", curr_token->lineNumber,entry_of_id->id);
+			return ERROR;
+		}
+		else if (entry_of_id->kind == VARIABLE && num_of_VARIABLE_t != -1)
+		{
+			fprintf(outSemantic, "ERROR at line:%d the ID: %s is val not array \n", curr_token->lineNumber,entry_of_id->id);
+			return ERROR;
+		}
+		else if (entry_of_id->kind == ARRAY && num_of_VARIABLE_t > entry_of_id->size_arry_or_num_parameters)
+		{
+			fprintf(outSemantic, "ERROR at line:%d out of bounds array :: the ID: %s is array in size: %d  \n", curr_token->lineNumber,entry_of_id->id, entry_of_id->size_arry_or_num_parameters);
+			return ERROR;
+		}
+		else
+		{
+			return entry_of_id->type;
+		}
+	}
+	else
+	{
+		return ERROR;
 	}
 }
