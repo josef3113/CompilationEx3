@@ -48,6 +48,15 @@ int insert(struct symbolTable *symbolTable, char *id, enum type type,int size, e
 	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
+int insert_Function(struct symbolTable *symbolTable, char *id, enum type type, int size, enum kind kind, int num_line, struct symbolList* list_param)
+{
+	struct symbol symbol;
+	initializeSymbol(&symbol, id, type, size, kind, num_line);
+	symbol.list_of_parameters = list_param;
+	return symbolTable_insertSymbol(symbolTable, symbol);
+}
+
+
 struct symbol* lookup(struct symbolTable *symbolTable, char *id) {
 	struct symbolTable *symbolTableIter = symbolTable;
 	struct symbol *symbol = find(symbolTableIter, id);

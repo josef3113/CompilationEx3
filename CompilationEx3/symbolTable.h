@@ -14,6 +14,7 @@ struct symbolTable* symbolTable_deleteChild(struct symbolTable* symbolTable);
 int symbolTable_insertSymbol(struct symbolTable *symbolTable, struct symbol symbol);
 
 int insert(struct symbolTable *symbolTable, char *id, enum type type,int size, enum kind kind, int num_line);
+int insert_Function(struct symbolTable *symbolTable, char *id, enum type type, int size, enum kind kind, int num_line, struct symbolList* list_param);
 struct symbol* lookup(struct symbolTable *symbolTable, char *id);
 struct symbol* find(struct symbolTable *symbolTable, char *id);
 

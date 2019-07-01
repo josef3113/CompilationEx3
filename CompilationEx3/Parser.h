@@ -30,3 +30,4 @@ enum Type parse_EXPRESSION_t(struct symbol*); // is F'
 
 // semantic
 enum Type check_Use(struct symbol * , int, Token*);
+struct symbolList* get_List_Parameters(struct symbolTable *);

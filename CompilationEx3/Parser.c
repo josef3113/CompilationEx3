@@ -491,17 +491,11 @@ void parse_FUNC_DEFINITION()
 	case TOKEN_KEY_REAL:
 	case TOKEN_KEY_INTEGER:
 	{
-		//semantic 
-		Type type_of_RETURNED_TYPE;
-		Type type_of_BLOCK;
-		int num_of_PARAM_DEFINITIONS;
-		int inserted;
-
-
+		
 		fprintf(outSyntactic, "Rule (FUNC_DEFINITION -> RETURNED_TYPE id (PARAM_DEFINITIONS) BLOCK ) \n");
 
 		back_token();
-		type_of_RETURNED_TYPE = parse_RETURNED_TYPE();
+		Type type_of_RETURNED_TYPE = parse_RETURNED_TYPE();
 		
 		// semantic
 		Token* token_of_id = next_token();
@@ -510,52 +504,29 @@ void parse_FUNC_DEFINITION()
 		match(TOKEN_ID);
 		match(TOKEN_SEP_L_ROUND_BRACKET);
 
-		//semantic
-		inserted = insert(symbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, -1 , FUNCTION, curr_token ->lineNumber);
-		if (!inserted)
-		{
-			Symbol* entry_of_function = find(symbolTable, token_of_id->lexeme);
-			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define at line: %d \n",
-					token_of_id->lineNumber, token_of_id->lexeme, entry_of_function->num_line_decler);
-		}
-
 		// semantic - do this here becous i want the names of parametrs will be in list symbol of this function
 		symbolTable = enter_scope(symbolTable);
 
-		num_of_PARAM_DEFINITIONS = parse_PARAM_DEFINITIONS();
+		int num_of_PARAM_DEFINITIONS = parse_PARAM_DEFINITIONS();
+		match(TOKEN_SEP_R_ROUND_BRACKET);
 
 
-		// try to save the parameters from table
-		// in this point symbolTable contain only the parameters so we save 
-		// the list of parametrs and update the data to symbol
-		struct symbolList* temp = NULL;
-		struct symbolList* list_of_parametrs = NULL;
-		temp = symbolTable->symbolListHead;
-		while (temp != NULL)
+		struct symbolList* list_of_parametrs = get_List_Parameters(symbolTable);// in this point exsist in table only param of this fanction
+
+		//semantic        // insert to global table
+		int inserted = insert_Function(symbolTable->parentSymbolTable, token_of_id->lexeme, type_of_RETURNED_TYPE, num_of_PARAM_DEFINITIONS, FUNCTION, curr_token->lineNumber,list_of_parametrs);
+		if (!inserted)
 		{
-			list_of_parametrs = symbolList_insertEntry(list_of_parametrs,temp->symbol);
-			temp = temp->nextEntry;
-		}
-
-
-
-
-		//semantic - update the real num of parameters and list of parametrs of function
-		if (inserted)
-		{									// find in global table the entry of this function
 			Symbol* entry_of_function = find(symbolTable->parentSymbolTable, token_of_id->lexeme);
-			entry_of_function->size_arry_or_num_parameters = num_of_PARAM_DEFINITIONS;
-			entry_of_function->list_of_parameters = list_of_parametrs;
+			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define at line: %d \n",
+				token_of_id->lineNumber, token_of_id->lexeme, entry_of_function->num_line_decler);
 		}
 		
-		match(TOKEN_SEP_R_ROUND_BRACKET);
-		type_of_BLOCK = parse_BLOCK();
+		Type type_of_BLOCK = parse_BLOCK();
 
 		//semantic
 		symbolTable = exit_scope(symbolTable);
 
-
-		//semantic
 		if (type_of_RETURNED_TYPE == VOID)
 		{
 			if (type_of_BLOCK != EMPTY && type_of_BLOCK != VOID)
@@ -919,13 +890,13 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 			else if (entry_of_id->size_arry_or_num_parameters != num_of_PARAMETERS_LIST)
 			{
 				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size_arry_or_num_parameters, num_of_PARAMETERS_LIST);
-			/*	struct symbolList * temp = entry_of_id->list_of_parameters;
+				struct symbolList * temp = entry_of_id->list_of_parameters;
 				printf("function: %s \n", entry_of_id->id);
 				while (temp != NULL)
 				{
 					printf("parameter : id: %s type: %d \n", temp->symbol.id, temp->symbol.type);
 					temp = temp->nextEntry;
-				}*/
+				}
 			}
 			
 		}
@@ -1191,4 +1162,16 @@ enum Type check_Use(struct symbol* entry_of_id, int num_of_VARIABLE_t, Token* cu
 	{
 		return ERROR;
 	}
+}
+
+struct symbolList* get_List_Parameters(struct symbolTable * symbolTable)
+{
+	struct symbolList* list_of_parametrs = NULL;
+	struct symbolList* temp = symbolTable->symbolListHead;
+	while (temp != NULL)
+	{
+		list_of_parametrs = symbolList_insertEntry(list_of_parametrs, temp->symbol);
+		temp = temp->nextEntry;
+	}
+	return list_of_parametrs;
 }
