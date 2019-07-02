@@ -8,6 +8,7 @@ typedef struct symbolList {
 	struct symbolList *nextEntry;
 }SymbolList;
 
+SymbolList* symbolList_initializeEntry(Symbol symbol);
 void symbolList_freeList(struct symbolList *head);
 struct symbolList* symbolList_findEntry(struct symbolList *head, char *id);
 struct symbol* symbolList_getSymbol(struct symbolList *head, char *id);

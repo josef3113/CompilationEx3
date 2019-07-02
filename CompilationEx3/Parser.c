@@ -66,13 +66,11 @@ int parse_VAR_DEFINITIONS()
 	case TOKEN_KEY_REAL:
 	case TOKEN_KEY_INTEGER:
 	{
-		// semantic 
-		int num_of_VAR_DEFINITION, num_of_VAR_DEFINITIONS_t;
 
 		fprintf(outSyntactic, "Rule (VAR_DEFINITIONS -> VAR_DEFINITION VAR_DEFINITIONS_t) \n");
 		back_token();
-		num_of_VAR_DEFINITION = parse_VAR_DEFINITION();
-		num_of_VAR_DEFINITIONS_t = parse_VAR_DEFINITIONS_t();
+		int num_of_VAR_DEFINITION = parse_VAR_DEFINITION();
+		int num_of_VAR_DEFINITIONS_t = parse_VAR_DEFINITIONS_t();
 
 		//semantic
 		return num_of_VAR_DEFINITION + num_of_VAR_DEFINITIONS_t;
@@ -221,13 +219,10 @@ int parse_VARIABLES_LIST(enum action action, enum type type)
 	{
 	case TOKEN_ID:
 	{
-		//semantic 
-		int num_of_VARIABLES_LIST_t;
-
 		fprintf(outSyntactic, "Rule (VARIABLES_LIST -> VARIABLE VARIABLES_LIST_t) \n");
 		back_token();
 		parse_VARIABLE(action, type);
-		num_of_VARIABLES_LIST_t = parse_VARIABLES_LIST_t(action, type);
+		int num_of_VARIABLES_LIST_t = parse_VARIABLES_LIST_t(action, type);
 
 		//semantic
 		return num_of_VARIABLES_LIST_t + 1;
@@ -256,12 +251,9 @@ int parse_VARIABLES_LIST_t(enum action action, enum type type)
 	{
 	case TOKEN_SEP_COMMA:
 	{
-		//semantic
-		int num_of_VARIABLES_LIST_t;
-
 		fprintf(outSyntactic, "Rule (VARIABLES_LIST_t -> ,VARIABLE VARIABLES_LIST_t) \n");
 		parse_VARIABLE(action, type);
-		num_of_VARIABLES_LIST_t = parse_VARIABLES_LIST_t(action, type);
+		int num_of_VARIABLES_LIST_t = parse_VARIABLES_LIST_t(action, type);
 		
 		//semantic
 		return num_of_VARIABLES_LIST_t + 1;
@@ -298,19 +290,12 @@ void parse_VARIABLE(enum action action, enum type type)
 {
 	Token*	curr_token = next_token();
 
-
 	switch (curr_token->kind)
 	{
 	case TOKEN_ID:
 	{
-
-		//semantic
-		int size_of_VARIABLE_t;
-		int inserted;
-
-
 		fprintf(outSyntactic, "Rule (VARIABLE -> id VARIABLE_t) \n");
-		size_of_VARIABLE_t = parse_VARIABLE_t();
+		int size_of_VARIABLE_t = parse_VARIABLE_t();
 
 
 
@@ -329,7 +314,9 @@ void parse_VARIABLE(enum action action, enum type type)
 
 		else // want to define var with name curr_token->lexeme
 		{
-			// semantic  
+			// semantic
+			int inserted;
+
 			if (size_of_VARIABLE_t == -1)
 			{
 				inserted = insert(symbolTable, curr_token->lexeme, type, size_of_VARIABLE_t, VARIABLE, curr_token->lineNumber);
@@ -1083,19 +1070,30 @@ Type parse_EXPRESSION_t(struct symbol * entry_of_id)
 		fprintf(outSyntactic, "Rule (EXPRESSION_t -> *EXPRESSION ) \n");
 
 		//semantic
-		check_Use(entry_of_id, -1, curr_token);
+		Type type_of_check = check_Use(entry_of_id, -1, curr_token);
+		Type type_of_EXPRESSION = parse_EXPRESSION();
 
+		if (type_of_check == ERROR || type_of_EXPRESSION == ERROR)
+		{
+			return ERROR;
+		}
+		return type_of_EXPRESSION;
 
-		return parse_EXPRESSION();
 	}break;
 	case TOKEN_OP_DIV:
 	{
 		fprintf(outSyntactic, "Rule (EXPRESSION_t -> /EXPRESSION ) \n");
 
 		//semantic
-		check_Use(entry_of_id, -1, curr_token);
+		Type type_of_check = check_Use(entry_of_id, -1, curr_token);
+		Type type_of_EXPRESSION = parse_EXPRESSION();
 
-		return parse_EXPRESSION();
+		if (type_of_check == ERROR || type_of_EXPRESSION == ERROR)
+		{
+			return ERROR;
+		}
+		return type_of_EXPRESSION;
+
 	}break;
 
 	case TOKEN_SEP_SEMICOLON:

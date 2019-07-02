@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-void initializeSymbol(Symbol *symbol, char *id, Type type,int size, Kind kind,int num_of_line)
+void symbol_initializeSymbol(Symbol *symbol, char *id, Type type,int size, Kind kind,int num_of_line)
 {
 	symbol->id = id;
 	symbol->type = type;
@@ -15,7 +15,7 @@ void initializeSymbol(Symbol *symbol, char *id, Type type,int size, Kind kind,in
 }
 
 
-int symbolCheckId(Symbol symbol, char *id) {
+int symbol_symbolCheckId(Symbol symbol, char *id) {
 	if (strcmp(symbol.id, id) == 0) {
 		return 0;
 	}

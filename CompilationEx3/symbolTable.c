@@ -25,9 +25,6 @@ SymbolTable * symbolTable_deleteChild(struct symbolTable * symbolTable) {
 	return parentSymbolTable;
 }
 
-Symbol* lookup(struct symbolTable  *symbolTable, char *id) {
-	return symbolList_getSymbol(symbolTable->symbolListHead, id);
-}
 
 int symbolTable_insertSymbol(struct symbolTable  *symbolTable, Symbol symbol) {
 	struct symbolList* head_old = symbolTable->symbolListHead;
@@ -41,21 +38,23 @@ int symbolTable_insertSymbol(struct symbolTable  *symbolTable, Symbol symbol) {
 }
 
 
-
 int insert(struct symbolTable  *symbolTable, char *id, Type type,int size, Kind kind,int num_line) {
 	Symbol symbol;
-	initializeSymbol(&symbol, id, type,size, kind,num_line);
+	symbol_initializeSymbol(&symbol, id, type,size, kind,num_line);
 	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
 int insert_Function(struct symbolTable  *symbolTable, char *id, Type type, int size, Kind kind, int num_line, struct symbolList* list_param)
 {
 	Symbol symbol;
-	initializeSymbol(&symbol, id, type, size, kind, num_line);
+	symbol_initializeSymbol(&symbol, id, type, size, kind, num_line);
 	symbol.list_of_parameters = list_param;
 	return symbolTable_insertSymbol(symbolTable, symbol);
 }
 
+Symbol* lookup(struct symbolTable  *symbolTable, char *id) {
+	return symbolList_getSymbol(symbolTable->symbolListHead, id);
+}
 
 Symbol* find(struct symbolTable  *symbolTable, char *id) {
 	SymbolTable  *symbolTableIter = symbolTable;

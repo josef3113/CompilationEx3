@@ -20,7 +20,7 @@ typedef struct symbol {
 }Symbol;
 
 
-void initializeSymbol(Symbol *symbol, char *id, Type type,int size, Kind kind,int num_of_line );
-int symbolCheckId(Symbol symbol, char *id);
+void symbol_initializeSymbol(Symbol *symbol, char *id, Type type,int size, Kind kind,int num_of_line );
+int symbol_symbolCheckId(Symbol symbol, char *id);
 
 #endif
