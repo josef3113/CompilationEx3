@@ -25,7 +25,7 @@ void parse_PROGRAM()
 		fprintf(outSyntactic, "Rule (PROGRAM -> program VAR_DEFINITIONS; STATEMENTS end FUNC_DEFINITIONS) \n");
 		parse_VAR_DEFINITIONS();
 		match(TOKEN_SEP_SEMICOLON);
-		parse_STATEMENTS();
+		parse_STATEMENTS(VOID);
 		match(TOKEN_KEY_END);
 
 		//semantic 
@@ -155,8 +155,8 @@ int parse_VAR_DEFINITION()
 		fprintf(outSyntactic, "Rule (VAR_DEFINITION -> TYPE VARIABLES_LIST) \n");
 
 		back_token();
-		Type type = parse_TYPE();
-		return parse_VARIABLES_LIST(TO_DEFINE, type);
+		Type type_of_TYPE = parse_TYPE();
+		return parse_VARIABLES_LIST(TO_DEFINE, type_of_TYPE);
 	}break;
 
 	default:
@@ -304,7 +304,7 @@ void parse_VARIABLE(enum action action, enum type type)
 			Symbol* entry_of_id = find(symbolTable, curr_token->lexeme);
 			if (entry_of_id == NULL)
 			{
-				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
+				fprintf(outSemantic, "ERROR at line:%d  the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
 			}
 			else
 			{
@@ -330,7 +330,7 @@ void parse_VARIABLE(enum action action, enum type type)
 			if (!inserted)
 			{
 				Symbol* entry_of_variable = lookup(symbolTable, curr_token->lexeme);  // find this in current table
-				fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s alredy define at line: %d \n",
+				fprintf(outSemantic, "ERROR at line:%d  the variable with lexme: %s alredy define at line: %d \n",
 						curr_token->lineNumber, curr_token->lexeme,entry_of_variable->num_line_decler);
 			}
 		}
@@ -503,30 +503,23 @@ void parse_FUNC_DEFINITION()
 		if (!inserted)
 		{
 			Symbol* entry_of_function = lookup(symbolTable->parentSymbolTable, token_of_id->lexeme);
-			fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s alredy define at line: %d \n",
+			fprintf(outSemantic, "ERROR at line:%d  the function with lexme:%s alredy define at line: %d \n",
 				token_of_id->lineNumber, token_of_id->lexeme, entry_of_function->num_line_decler);
+			
+			// free the parametrs becous them not insert to table so enyone cam free them 
+			symbolList_freeList(list_of_parametrs);
 		}
 		
-		Type type_of_BLOCK = parse_BLOCK();
+		Type type_of_BLOCK = parse_BLOCK(type_of_RETURNED_TYPE);
 
 		//semantic
 		symbolTable = pop_table(symbolTable);
 
-		if (type_of_RETURNED_TYPE == VOID)
+		if (type_of_RETURNED_TYPE != VOID && type_of_BLOCK == EMPTY)
 		{
-			if (type_of_BLOCK != EMPTY && type_of_BLOCK != VOID)
-			{
-				fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s define void but return other type\n", token_of_id->lineNumber, token_of_id->lexeme);
-			}
+			fprintf(outSemantic, "ERROR at line:%d  the function with lexme:%s define type: %s  but no return \n", token_of_id->lineNumber, token_of_id->lexeme,ENUM_TYPE[type_of_RETURNED_TYPE]);
 		}
-		else
-		{
-			if (type_of_BLOCK != type_of_RETURNED_TYPE)
-			{
-				fprintf(outSemantic, "ERROR at line: %d the function with lexme:%s miss match return type\n", token_of_id->lineNumber, token_of_id->lexeme);
-			}
-		}
-	
+		
 	}break;
 
 	default:
@@ -627,7 +620,7 @@ int parse_PARAM_DEFINITIONS()
 	}
 }
 
-Type parse_STATEMENTS()
+Type parse_STATEMENTS(enum type need_type)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -639,9 +632,9 @@ Type parse_STATEMENTS()
 		fprintf(outSyntactic, "Rule (STATEMENTS -> STATEMENT;STATEMENTS_t ) \n");
 
 		back_token();
-		Type type_of_STATEMENT = parse_STATEMENT();
+		Type type_of_STATEMENT = parse_STATEMENT(need_type);
 		match(TOKEN_SEP_SEMICOLON);
-		Type type_of_STATEMENTS_t = parse_STATEMENTS_t();
+		Type type_of_STATEMENTS_t = parse_STATEMENTS_t(need_type);
 
 		// semantic
 		if (type_of_STATEMENT == type_of_STATEMENTS_t)
@@ -656,8 +649,16 @@ Type parse_STATEMENTS()
 		{
 			return type_of_STATEMENT;
 		}
-		else // two type diff from empty its iilegal
+		else // two type diff 
 		{
+			if (type_of_STATEMENT == ERROR)
+			{
+				return type_of_STATEMENTS_t;
+			}
+			else if(type_of_STATEMENTS_t == ERROR)
+			{
+				return type_of_STATEMENT;
+			}
 			return ERROR;
 		}
 	}break;
@@ -680,7 +681,7 @@ Type parse_STATEMENTS()
 	}
 }
 
-Type parse_STATEMENTS_t()
+Type parse_STATEMENTS_t(enum type need_type)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -692,7 +693,7 @@ Type parse_STATEMENTS_t()
 		fprintf(outSyntactic, "Rule (STATEMENTS_t -> STATEMENTS ) \n");
 
 		back_token();
-		return parse_STATEMENTS();
+		return parse_STATEMENTS(need_type);
 	}break;
 
 	case TOKEN_KEY_END:
@@ -724,7 +725,7 @@ Type parse_STATEMENTS_t()
 	}
 }
 
-Type parse_STATEMENT()
+Type parse_STATEMENT(enum type need_type)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -732,8 +733,16 @@ Type parse_STATEMENT()
 	case TOKEN_KEY_RETURN:
 	{
 		fprintf(outSyntactic, "Rule (STATEMENT -> return STATEMENT_t ) \n");
+		Type type_of_STATEMENT_t = parse_STATEMENT_t();
 
-		return parse_STATEMENT_t();
+		//semantic
+		if (need_type != type_of_STATEMENT_t)
+		{
+			fprintf(outSemantic, "ERROR at line:%d  missmatch return type : need return type: %s actual: %s \n", curr_token->lineNumber,ENUM_TYPE[need_type],ENUM_TYPE[type_of_STATEMENT_t]);
+			return ERROR;
+		}
+		return type_of_STATEMENT_t;
+
 	}break;
 
 	case TOKEN_ID:
@@ -744,7 +753,7 @@ Type parse_STATEMENT()
 		Symbol* entry_of_id = find(symbolTable, curr_token->lexeme);
 		if (entry_of_id == NULL)
 		{
-			fprintf(outSemantic, "ERROR at line: %d the variable / function with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
+			fprintf(outSemantic, "ERROR at line:%d  the variable / function with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
 		}
 		parse_STATEMENT_t2(entry_of_id);
 
@@ -761,13 +770,13 @@ Type parse_STATEMENT()
 		// semantic 
 		symbolTable = make_table(symbolTable);
 
-		parse_BLOCK();
+		Type type_of_BLOCK = parse_BLOCK(need_type);
 
 		// semantic 
 		symbolTable = pop_table(symbolTable);
 
 		// semantic
-		return EMPTY;
+		return type_of_BLOCK;
 
 	}break;
 
@@ -852,7 +861,7 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 		{
 			if (entry_of_id->type == INTEGER && type_of_EXPRESSION != INTEGER)
 			{
-				fprintf(outSemantic, "ERROR at line: %d missmatch of types \n", curr_token->lineNumber);
+				fprintf(outSemantic, "ERROR at line:%d  missmatch of types ID: %s is INTEGER  \n", curr_token->lineNumber, entry_of_id->id);
 			}
 		}
 	}break;
@@ -870,18 +879,11 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 		{
 			if (entry_of_id->kind != FUNCTION)
 			{
-				fprintf(outSemantic, "ERROR at line:%d - you try use array/val like function \n", curr_token->lineNumber);
+				fprintf(outSemantic, "ERROR at line:%d  the ID: %s is array/val not function \n", curr_token->lineNumber,entry_of_id->id);
 			}
 			else if (entry_of_id->size_arry_or_num_parameters != num_of_PARAMETERS_LIST)
 			{
-				fprintf(outSemantic, "ERROR at line:%d - missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size_arry_or_num_parameters, num_of_PARAMETERS_LIST);
-				SymbolList * temp = entry_of_id->list_of_parameters;
-				printf("function: %s \n", entry_of_id->id);
-				while (temp != NULL)
-				{
-					printf("parameter : id: %s type: %d \n", temp->symbol.id, temp->symbol.type);
-					temp = temp->nextEntry;
-				}
+				fprintf(outSemantic, "ERROR at line:%d  missmatch number of parametrs need : %d and actual : %d \n", curr_token->lineNumber, entry_of_id->size_arry_or_num_parameters, num_of_PARAMETERS_LIST);
 			}
 			
 		}
@@ -903,7 +905,7 @@ void parse_STATEMENT_t2(struct symbol * entry_of_id)
 }
 
 
-Type parse_BLOCK()
+Type parse_BLOCK(enum type need_type)
 {
 	Token*	curr_token = next_token();
 	switch (curr_token->kind)
@@ -914,7 +916,7 @@ Type parse_BLOCK()
 
 		parse_VAR_DEFINITIONS();
 		match(TOKEN_SEP_SEMICOLON);
-		Type type_of_STATEMENTS = parse_STATEMENTS();
+		Type type_of_STATEMENTS = parse_STATEMENTS(need_type);
 		match(TOKEN_SEP_R_CURLY_BRACKET);
 
 		//semantic
@@ -992,7 +994,7 @@ Type parse_EXPRESSION()
 		Type type_to_return;
 		if (entry_of_id == NULL)
 		{
-			fprintf(outSemantic, "ERROR at line: %d the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
+			fprintf(outSemantic, "ERROR at line:%d  the variable with lexme: %s not define \n", curr_token->lineNumber, curr_token->lexeme);
 			type_to_return = ERROR;
 		}
 
@@ -1131,22 +1133,22 @@ Type check_Use(struct symbol* entry_of_id, int num_of_VARIABLE_t, Token* curr_to
 	{ 
 		if (entry_of_id->kind == FUNCTION)
 		{
-			fprintf(outSemantic, "ERROR at line:%d the ID: %s is function \n", curr_token->lineNumber,entry_of_id->id);
+			fprintf(outSemantic, "ERROR at line:%d  the ID: %s is function \n", curr_token->lineNumber,entry_of_id->id);
 			return ERROR;
 		}
 		else if (entry_of_id->kind == ARRAY && num_of_VARIABLE_t == -1)
 		{
-			fprintf(outSemantic, "ERROR at line:%d the ID: %s is array not val \n", curr_token->lineNumber,entry_of_id->id);
+			fprintf(outSemantic, "ERROR at line:%d  the ID: %s is array not val \n", curr_token->lineNumber,entry_of_id->id);
 			return ERROR;
 		}
 		else if (entry_of_id->kind == VARIABLE && num_of_VARIABLE_t != -1)
 		{
-			fprintf(outSemantic, "ERROR at line:%d the ID: %s is val not array \n", curr_token->lineNumber,entry_of_id->id);
+			fprintf(outSemantic, "ERROR at line:%d  the ID: %s is val not array \n", curr_token->lineNumber,entry_of_id->id);
 			return ERROR;
 		}
-		else if (entry_of_id->kind == ARRAY && num_of_VARIABLE_t > entry_of_id->size_arry_or_num_parameters)
+		else if (entry_of_id->kind == ARRAY && num_of_VARIABLE_t >= entry_of_id->size_arry_or_num_parameters)
 		{
-			fprintf(outSemantic, "ERROR at line:%d out of bounds array :: the ID: %s is array in size: %d  \n", curr_token->lineNumber,entry_of_id->id, entry_of_id->size_arry_or_num_parameters);
+			fprintf(outSemantic, "ERROR at line:%d  out of bounds array : the ID: %s is array in size: %d  \n", curr_token->lineNumber,entry_of_id->id, entry_of_id->size_arry_or_num_parameters);
 			return ERROR;
 		}
 		else

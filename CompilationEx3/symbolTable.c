@@ -85,12 +85,10 @@ SymbolTable * pop_table(struct symbolTable * symbolTable) {
 	{
 		if (head->symbol.used == NOT_USED)
 		{
-			fprintf(outSemantic,"WARNING at line: %d the id with lexme: %s not used \n", head->symbol.num_line_decler, head->symbol.id);
+			fprintf(outSemantic,"WARNING at line:%d  the id with lexme: %s not used \n", head->symbol.num_line_decler, head->symbol.id);
 		}
 		head = head->nextEntry;
 	}
-
-
 	return symbolTable_deleteChild(symbolTable);
 }
 

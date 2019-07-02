@@ -1924,9 +1924,6 @@ void yyfree(void * ptr)
 
 int main(int argc, char *argv[])
 {
-	int a;
-
-
 	yyin = fopen("C:\\temp\\test1.txt", "r");
 	yyout = fopen("C:\\temp\\test1_311763718_311303333_lex.txt", "w");
 	outSyntactic = fopen("C:\\temp\\test1_311763718_311303333_syntactic.txt", "w");
@@ -1962,9 +1959,5 @@ int main(int argc, char *argv[])
 	
 
 	_CrtDumpMemoryLeaks();
-
-	scanf("%d", &a);
-
-
 
 }

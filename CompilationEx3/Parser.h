@@ -18,12 +18,12 @@ void parse_FUNC_DEFINITIONS_t();
 void parse_FUNC_DEFINITION();
 enum type parse_RETURNED_TYPE();
 int parse_PARAM_DEFINITIONS();
-enum type parse_STATEMENTS();
-enum type parse_STATEMENTS_t(); // is C'
-enum type parse_STATEMENT();
+enum type parse_STATEMENTS(enum type);
+enum type parse_STATEMENTS_t(enum type); // is C'
+enum type parse_STATEMENT(enum type);
 enum type parse_STATEMENT_t(); // is D'
 void parse_STATEMENT_t2(struct symbol *); // is E'
-enum type parse_BLOCK();
+enum type parse_BLOCK(enum type);
 int parse_PARAMETERS_LIST();
 enum type parse_EXPRESSION();
 enum type parse_EXPRESSION_t(struct symbol*); // is F'

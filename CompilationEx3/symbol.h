@@ -9,6 +9,15 @@ typedef enum action { TO_USE, TO_DEFINE}Action;
 typedef enum kind { VARIABLE, FUNCTION, ARRAY }Kind;
 typedef enum use { NOT_USED, USED}Use;
 
+static const char *ENUM_TYPE[] =
+{
+	"VOID",
+	"INTEGER",
+	"REAL",
+	"EMPTY",
+	"ERROR"
+};
+
 typedef struct symbol {
 	char* id;
 	Type type;
