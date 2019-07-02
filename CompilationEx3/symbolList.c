@@ -10,11 +10,7 @@ void symbolList_freeList(struct symbolList *head) {
 	SymbolList *next;
 	next = head->nextEntry;
 	while (head != NULL) {
-		//free(&(head->symbol));
 		next = head->nextEntry;
-		// semantic todo
-		//free(head->symbol.id);
-
 		// free the list of parametrs of all symbol in symbol table
 		symbolList_freeList(head->symbol.list_of_parameters);
 		free(head);
