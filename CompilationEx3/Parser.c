@@ -35,8 +35,6 @@ void parse_PROGRAM()
 
 		parse_FUNC_DEFINITIONS();
 
-		// go out from global table
-		pop_table(symbolTable);
 
 	}break;
 
@@ -52,6 +50,9 @@ void parse_PROGRAM()
 	}
 
 	}
+
+	// go out from global table
+	pop_table(symbolTable);
 
 }
 
