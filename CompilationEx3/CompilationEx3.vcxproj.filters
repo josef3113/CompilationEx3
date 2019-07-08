@@ -51,4 +51,20 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="lexical.lex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="syntax directed scheme.docx">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="semantic table.docx">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="information.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

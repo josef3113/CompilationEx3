@@ -125,6 +125,14 @@
     <ClInclude Include="symbolTable.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="lexical.lex" />
+    <None Include="semantic table.docx" />
+    <None Include="syntax directed scheme.docx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="information.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
